@@ -35,7 +35,7 @@ from leadflow.data import SCHEMAS, Bundle, DataQualityError, demo_inputs, load_b
 ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "sql/cohort.sql"
 DIST = ROOT / "frontend/dist"
-MAX_FILE_BYTES = 25 * 1024 * 1024
+MAX_FILE_BYTES = 5 * 1024 * 1024
 MAX_UPLOADED_DATASETS = 4
 RECORD_COLUMNS = [
     "inquiry_id",
@@ -226,7 +226,7 @@ async def upload(request):
     if not length.isdigit():
         raise HTTPException(411, "Upload requests need a Content-Length header.")
     if int(length) > 3 * MAX_FILE_BYTES + 64 * 1024:
-        raise HTTPException(413, "Each file must be 25 MB or smaller.")
+        raise HTTPException(413, "Each file must be 5 MB or smaller.")
     try:
         parser = InMemoryParser(request.headers, request.stream(), max_files=3, max_fields=4)
         form = await parser.parse()
@@ -237,7 +237,7 @@ async def upload(request):
         part = form.get(name)
         if isinstance(part, UploadFile):
             if (part.size or 0) > MAX_FILE_BYTES:
-                raise HTTPException(413, "Each file must be 25 MB or smaller.")
+                raise HTTPException(413, "Each file must be 5 MB or smaller.")
             inputs[name] = BytesIO(await part.read())
         else:
             inputs[name] = None

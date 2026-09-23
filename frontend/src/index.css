@@ -235,6 +235,17 @@ a {
   border-bottom: 1px solid var(--line);
 }
 
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1.5px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--c-tide), var(--c-sky), var(--c-beam));
+  box-shadow: 0 0 10px var(--c-tide);
+}
+
 .topbar-inner {
   display: flex;
   align-items: center;
@@ -1022,6 +1033,9 @@ kbd {
 .seg {
   position: relative;
   display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
   padding: 4px;
   border-radius: 13px;
   border: 1px solid var(--panel-border);
@@ -1216,6 +1230,7 @@ kbd {
 }
 
 .big-count {
+  flex-shrink: 0;
   font-family: var(--f-display);
   font-size: 64px;
   line-height: 1;

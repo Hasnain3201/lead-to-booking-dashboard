@@ -19,14 +19,15 @@ No login system, hosted database, LLM calls, predictive scoring, live CRM sync, 
 | Component | Choice | Purpose |
 |---|---|---|
 | Runtime | Python 3.11+, project `.venv` | Portable data workflow with isolated packages |
-| App | Streamlit | Filters, uploads, tables, downloads, and a local demo |
+| Interface | React 19 + TypeScript (Vite), D3 geometry, Motion | The Harbor Observatory frontend: custom charts, particle flow, and transitions |
+| Local API | Starlette + Uvicorn | Serves the tested Python metrics and the built interface from one local process |
+| Classic view | Streamlit + Plotly | The original analyst dashboard, kept as a simple alternative |
 | Cleanup | pandas | Parse typed columns and validate CSV contracts |
 | Metrics | DuckDB SQL, in memory | Transparent joins and aggregation without a database server |
-| Charts | Plotly | Interactive funnel, weekly trends, and source comparison |
-| Tests | pytest + Streamlit AppTest | Hand-calculated metric fixtures, edge cases, UI behavior |
-| Style checks | Ruff | Consistent formatting and basic static checks |
-| Version control | Git + private GitHub repo | Private during development; public after final design and showcase phase |
-| CI | GitHub Actions | Run checks on pushes and pull requests |
+| Tests | pytest, Starlette TestClient, Streamlit AppTest | Hand-calculated fixtures, API reconciliation, edge cases, UI behavior |
+| Style checks | Ruff, oxlint, TypeScript | Consistent formatting and static checks for both languages |
+| Version control | Git + GitHub | Private during development; public after the final design and showcase phase |
+| CI | GitHub Actions | Python checks plus frontend lint and build on pushes and pull requests |
 
 The SQL first aggregates completed jobs per booking, then bookings per inquiry. Only then does the dashboard compute inquiry metrics. This prevents repeat bookings from double-counting leads or weighting response-time averages incorrectly.
 
@@ -36,9 +37,10 @@ flowchart LR
     B -->|Invalid| C[Explain error and stop import]
     B -->|Valid| D[In-memory DuckDB]
     D --> E[One row per inquiry]
-    E --> F[Filters and metrics]
-    F --> G[Charts and record drill-down]
-    F --> H[Follow-up CSV and weekly brief]
+    E --> F[Filters and metrics in Python]
+    F --> J[Local JSON API]
+    J --> G[React interface: flow, tide chart, records]
+    J --> H[Follow-up CSV and weekly brief]
     B --> I[Import receipt]
 ```
 
@@ -64,7 +66,7 @@ Exact field contracts are in `DATA-CONTRACT.md`; formulas and caveats are in `ME
 
 Create the Documents folder, virtual environment, dependency lock, install metadata, Git repository, private GitHub remote, launcher, README, project instructions, and CI. Build the deterministic seed generator, demo CSVs, first app screens, SQL query, validation, and regression tests.
 
-Acceptance: launch without credentials; show 720 unique inquiries after removing three duplicate rows; run checks successfully; open all five app sections; create and push the private repository; write a handoff with precise next steps.
+Acceptance: launch without credentials; show 720 unique inquiries after removing three duplicate rows; run checks successfully; open all five app sections; create and push the private repository; record precise next steps.
 
 ### 1. Requirements and source mapping — 2–3 hours
 
@@ -127,67 +129,55 @@ Get explicit permission to use anonymized exports. Map their fields, agree metri
 
 Acceptance: the owner verifies totals against source records and reports a concrete decision the dashboard helped with. Only then consider evidence-based resume statements about business impact.
 
-Estimated remaining demo work: roughly **16–24 focused hours** beyond this foundation, depending on refinement. This is a planning estimate, not a claim about completed effort.
+## Final phase: distinctive frontend and public showcase — delivered
 
-## Required final phase: distinctive frontend and public showcase
+Goal: a beautiful, unique, visually striking interface with playful effects, and a polished public repository. The optional real-business pilot does not block this phase.
 
-User request recorded September 23, 2026. After the functional demo is complete, deliver a beautiful, unique, visually impressive frontend with playful effects, followed by a polished public repository. This is required scope, not an optional suggestion. The optional real-business pilot does not block this phase.
+### What was delivered
 
-### Research and visual direction
+- **Research and direction.** A reference board of current award-winning data sites, creative-coding tutorials, and design-system typography guidance is in `DESIGN-DIRECTION.md`, with notes on what each source contributed. The original identity, Harbor Observatory, pairs night-harbor colors with editorial Fraunces type, Geist interface text, and tabular mono numbers.
+- **Stack decision.** Streamlit could not support custom layouts and effects without fighting the framework. A dedicated React + TypeScript frontend now talks to a small local Starlette API that wraps the tested Python and SQL. The browser formats and draws; it never recalculates metrics. Streamlit remains as a classic view.
+- **Signature interactions.** A particle Sankey where each dot is one real inquiry; a brushable daily tide chart; a circular theme reveal; digit-swap numerals that never show made-up intermediate values; a printed import receipt; and a failure screen that clears every metric.
+- **Full experience.** Overview, filter dock, source comparison with an exact table, follow-up queue, cancelled and no-show bookings, searchable records, inquiry drawer, weekly dispatch, uploads, validation errors, and empty and loading states, plus a ⌘K command palette.
+- **Accessibility and performance.** Reduced motion pauses the particle current and disables decorative motion. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard. The flow view held 60 fps in browser measurement.
+- **Showcase.** The README uses real captures from `scripts/capture_screenshots.py` (headless Chrome), stored in `docs/assets/`, including an animated recording of the flow view.
 
-- At the start of this phase, research current frontend projects and design examples online. Use several independent sources, including actual live products, creative developer portfolios, and modern open-source interfaces; do not rely only on remembered trends or one template.
-- Discover relevant design/frontend skills and tools available at that time, read the useful ones, and apply them where they improve the result.
-- Save a reference board with source links and notes about typography, composition, color, motion, chart treatment, and interaction. Draw inspiration without copying another project's identity or unlicensed assets.
-- Develop a cohesive original visual identity for Leadflow: distinctive typography, a considered color palette, expressive layouts, custom chart styling, and memorable visual details. The target is an exceptional portfolio centerpiece, not the default appearance of a dashboard framework.
-- Reassess the frontend stack after research. If Streamlit prevents the desired result, plan a dedicated frontend while preserving the tested Python/SQL analytics and data contracts. Do not decide the replacement stack prematurely or constrain the redesign to a cosmetic theme change.
+### Acceptance
 
-### Interaction and visual implementation
-
-- Include tasteful fun effects: animated data reveals, smooth transitions, responsive hover/focus feedback, and one or two signature interactions that fit the lead-to-booking story.
-- Keep motion purposeful and numbers readable. Support reduced motion, keyboard use, clear focus states, and touch devices; avoid effects that obstruct tasks or make metrics misleading.
-- Design the full experience: overview, filters, imports, validation errors, empty/loading states, record details, source comparisons, downloads, and weekly briefs.
-- Verify desktop and mobile layouts, animation performance, readability, and all existing analytical behavior. Retain the synthetic-data labeling.
-
-### README and repository presentation
-
-- Create an attractive README with a strong hero image, real screenshots of the finished interface, a feature tour, and an animated preview or short demo where useful.
-- Include a plain-English problem/solution explanation, exact quick-start commands, example input files, an architecture diagram, metric definitions, testing instructions, limitations, and a clear project structure.
-- Use actual final-app captures rather than mockups that imply unimplemented features. Store optimized images in a dedicated documentation asset folder with useful alt text. Check every link and command from a fresh checkout.
-- Attribute authorship only to Hasnain Shahzad. Do not add tool credits or co-author trailers to project prose, code, comments, or commits. Preserve any third-party notices required by asset or dependency licenses.
-
-### Public launch authorization and completion
-
-The user explicitly authorized making the GitHub repository public **once the project and this presentation phase are finished**. Keep it private until then. Before changing visibility, review tracked files and Git history for secrets, private data, and local session metadata; retain only suitable project materials and synthetic data. This is an authorized future action and does not require asking again solely because it changes the repository's visibility. Website deployment remains separate scope.
-
-Acceptance: a distinctive, polished interface; useful and accessible effects; verified desktop/mobile workflows; accurate screenshots and feature descriptions; a reproducible README; passing checks; and a public repository whose final presentation is ready to share. The previous 16–24-hour estimate excludes this newly requested design work; estimate it after the visual research and stack decision.
+A distinctive, polished interface; useful and accessible effects; verified desktop and mobile workflows; accurate screenshots; a reproducible README; passing checks; and a repository ready to share. Before changing visibility to public, review tracked files and Git history for secrets, private data, and local working notes. Website deployment remains separate scope; a public demo must set `LEADFLOW_DISABLE_UPLOADS=1`.
 
 ## Test and review strategy
 
-- Tiny hand-calculated datasets prove conversion, duplicate handling, mean response time, revenue, and follow-up thresholds.
-- Invalid input tests prove strict rejection of orphan keys, conflicting duplicates, chronology issues, bad statuses, and nonfinite/negative amounts.
+- Tiny hand-calculated datasets prove conversion, duplicate handling, mean response time, revenue, furthest outcomes, and follow-up thresholds.
+- Invalid input tests prove strict rejection of orphan keys, conflicting duplicates, chronology issues, bad statuses, and nonfinite or negative amounts.
+- API tests reconcile every view with authoritative totals and cover filters, exports, uploads, and failure payloads.
 - Streamlit tests prove demo startup, safe empty filters, and the upload prerequisite screen.
-- Browser review checks charts, layout, filter behavior, upload success/failure, and downloaded files. Initial automated coverage is not a substitute for the remaining manual acceptance matrix.
-- CI uses locked dependencies on Python 3.11. Re-resolve deliberately, review changes, and retest when upgrading packages.
+- Browser review covers charts, layout, filter behavior, upload success and failure, and downloaded files. Automated coverage is not a substitute for the manual acceptance checklist in `DEMO-GUIDE.md`.
+- CI uses locked Python dependencies on Python 3.11 and `npm ci` for the frontend. Re-resolve deliberately, review changes, and retest when upgrading packages.
 
 ## Project structure
 
 ```text
-app.py                       Streamlit entry point
-src/leadflow/data.py          CSV parsing and validation
-src/leadflow/analytics.py     SQL integration, metrics, summaries, exports
+serve.py                     Starts the local API and interface (http://127.0.0.1:8765)
+frontend/                    React + TypeScript interface (Vite)
+src/leadflow/api.py          Local JSON API over the analytics
+src/leadflow/data.py         CSV parsing and validation
+src/leadflow/analytics.py    SQL integration, metrics, summaries, exports
 sql/cohort.sql               Auditable inquiry-level aggregation
-scripts/generate_demo.py     Reproducible synthetic inputs
-data/demo/                  Committed synthetic CSVs and provenance
-data/invalid/               Deliberately broken demonstration input
-tests/                      Calculation, validation, and UI tests
-docs/                       Plan, contracts, demo guide, handoff
-requirements.lock.txt       Exact resolved environment
-open-dashboard.command      macOS double-click launcher
+app.py                       Classic Streamlit view
+scripts/                     Demo generator, benchmark, JSON export, screenshot capture
+data/demo/                   Committed synthetic CSVs and provenance
+data/invalid/                Deliberately broken demonstration input
+tests/                       Calculation, validation, API, and UI tests
+docs/                        Plan, contracts, metrics, design, demo guide, assets
+requirements.lock.txt        Exact resolved Python environment
+open-dashboard.command       macOS double-click launcher
 ```
 
 ## Primary technical references
 
-- [Streamlit app testing](https://docs.streamlit.io/develop/api-reference/app-testing)
-- [Streamlit AppTest API](https://docs.streamlit.io/develop/api-reference/app-testing/st.testing.v1.apptest)
 - [DuckDB Python API](https://duckdb.org/docs/current/clients/python/overview)
-- [DuckDB Python reference](https://duckdb.org/docs/current/clients/python/reference/)
+- [Starlette](https://www.starlette.io/)
+- [Vite](https://vite.dev/) and [React](https://react.dev/)
+- [d3-sankey](https://github.com/d3/d3-sankey) and [Motion](https://motion.dev/)
+- [Streamlit app testing](https://docs.streamlit.io/develop/api-reference/app-testing)

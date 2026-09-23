@@ -125,6 +125,14 @@ def test_missing_files_are_reported(client):
     assert {issue["file"] for issue in issues} == {"inquiries.csv", "bookings.csv"}
 
 
+def test_oversized_upload_is_rejected(client):
+    files = demo_files()
+    files["jobs"] = ("jobs.csv", b"x" * (5 * 1024 * 1024 + 1), "text/csv")
+    response = client.post("/api/datasets", files=files, data={"snapshot": "2026-09-23"})
+    assert response.status_code == 413
+    assert "5 MB" in response.json()["detail"]
+
+
 def test_uploads_can_be_disabled_for_public_demos():
     client = TestClient(create_app(uploads_enabled=False, dist=ROOT / "missing-dist"))
     assert client.post("/api/datasets", files=demo_files()).status_code == 403

@@ -1,6 +1,6 @@
-import { motion } from 'motion/react'
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
 import type { Day, Meta, Metrics } from '../lib/api'
-import { currency, formatDate, hours, integer, percent } from '../lib/format'
+import { currency, formatDate, hours, integer, percent, prefersReducedMotion } from '../lib/format'
 import { Icon, Info, Numeral, Panel } from './ui'
 
 const words = (text: string, offset = 0, className = 'word') =>
@@ -20,8 +20,26 @@ export function Hero({ meta, metrics, onPalette }: { meta: Meta; metrics: Metric
   const conversion = metrics.conversion ?? 0
   const radius = 150
   const circumference = 2 * Math.PI * radius
+  const px = useMotionValue(0)
+  const py = useMotionValue(0)
+  const rotateX = useSpring(useTransform(py, [-1, 1], [9, -9]), { stiffness: 120, damping: 18 })
+  const rotateY = useSpring(useTransform(px, [-1, 1], [-12, 12]), { stiffness: 120, damping: 18 })
+  const tilt = (event: React.PointerEvent<HTMLElement>) => {
+    if (prefersReducedMotion() || event.pointerType !== 'mouse') return
+    const rect = event.currentTarget.getBoundingClientRect()
+    px.set(((event.clientX - rect.left) / rect.width) * 2 - 1)
+    py.set(((event.clientY - rect.top) / rect.height) * 2 - 1)
+  }
   return (
-    <section className="hero" id="top">
+    <section
+      className="hero"
+      id="top"
+      onPointerMove={tilt}
+      onPointerLeave={() => {
+        px.set(0)
+        py.set(0)
+      }}
+    >
       <div className="beam" aria-hidden="true" />
       <div className="shell hero-grid">
         <div>
@@ -73,7 +91,7 @@ export function Hero({ meta, metrics, onPalette }: { meta: Meta; metrics: Metric
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="gauge">
+          <motion.div className="gauge" style={{ rotateX, rotateY, transformPerspective: 900 }}>
             <svg viewBox="-180 -180 360 360" aria-hidden="true">
               <defs>
                 <linearGradient id="gauge-grad" x1="0" x2="1" y1="0" y2="1">
@@ -131,7 +149,7 @@ export function Hero({ meta, metrics, onPalette }: { meta: Meta; metrics: Metric
               <br />
               {formatDate(meta.snapshot)}
             </span>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>

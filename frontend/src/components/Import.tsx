@@ -73,8 +73,8 @@ export function Import({
       <div className="label">Bring your own files</div>
       <h3>Drop three CSV exports</h3>
       <p style={{ margin: 0, color: 'var(--ink-2)' }}>
-        Files are validated and processed in memory by the local Python service and are never written to disk. A failed
-        import clears the dashboard rather than leaving old numbers on screen.
+        Up to 5 MB each. Files are validated and processed in memory by the local Python service and are never written
+        to disk. A failed import clears the dashboard rather than leaving old numbers on screen.
       </p>
       {!enabled && (
         <p className="caveat">Uploads are disabled on this deployment. Clone the project to try your own files.</p>

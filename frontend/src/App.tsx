@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, MotionConfig } from 'motion/react'
+import { AnimatePresence, motion, MotionConfig, useScroll, useSpring } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Attention } from './components/Attention'
 import { Current } from './components/Current'
@@ -39,6 +39,8 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const themeButton = useRef<HTMLButtonElement>(null)
+  const { scrollYProgress } = useScroll()
+  const progress = useSpring(scrollYProgress, { stiffness: 200, damping: 30 })
 
   useEffect(() => {
     if (!dataset) return
@@ -246,6 +248,7 @@ export default function App() {
             </button>
           </div>
         </div>
+        <motion.div className="scroll-progress" style={{ scaleX: progress }} aria-hidden="true" />
       </header>
 
       <main>

@@ -30,7 +30,7 @@ Date filters select inquiry creation cohorts. The `timeline` and `brief` deliber
 
 ## Upload safety
 
-Uploads require `Content-Length`, are limited to 25 MB per file, and are parsed with an in-memory multipart parser, so files are never spooled to temporary disk. A failed import returns the full issue report and creates no dataset. The interface then clears every metric and shows the issues until a valid bundle is imported or the user returns to the demo. Set `LEADFLOW_DISABLE_UPLOADS=1` before any public deployment.
+Uploads require `Content-Length`, are limited to 5 MB per file (matching the CSV contract), and are parsed with an in-memory multipart parser, so files are never spooled to temporary disk. A failed import returns the full issue report and creates no dataset. The interface then clears every metric and shows the issues until a valid bundle is imported or the user returns to the demo. Set `LEADFLOW_DISABLE_UPLOADS=1` before any public deployment.
 
 ## Static export
 

@@ -53,6 +53,8 @@ def test_hand_calculated_metrics_do_not_double_count_repeat_bookings():
     result = metrics(cohort)
     assert len(cohort) == 4
     assert str(cohort.created_at.dt.tz) == "UTC"
+    counts = ["bookings", "cancellations", "no_shows", "completed_jobs", "revenue_cents"]
+    assert all(str(cohort[column].dtype) == "int64" for column in counts)
     assert result["conversion"] == 0.5
     assert result["response_hours"] == 4  # Not (2 + 2 + 6) / 3 from a fan-out join.
     assert result["response_coverage"] == 0.5

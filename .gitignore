@@ -16,3 +16,7 @@ exports/
 dist/
 build/
 
+
+# Local working notes
+AGENTS.md
+docs/HANDOFF.md

@@ -1,68 +1,204 @@
-# Leadflow — Lead-to-Booking Dashboard
+<div align="center">
 
-A local operations dashboard for **Harbor Home Services**, a fictional business. Combine inquiries, bookings, and completed jobs to understand conversion, response times, cancellations, lead sources, and follow-up priorities.
+# Leadflow
 
-**All included records and results are synthetic. No real client outcomes are claimed.**
+### From first hello to finished job.
 
-## Open the installed project
+A lead-to-booking operations dashboard for a small service business. It joins **inquiries, bookings, and completed jobs** to show which leads are slipping, where bookings fall through, and which sources turn into real work.
 
-Double-click `open-dashboard.command` in this folder. Keep its Terminal window open; press Control-C to stop. Or:
+[![Checks](https://github.com/Hasnain3201/lead-to-booking-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Hasnain3201/lead-to-booking-dashboard/actions/workflows/ci.yml)
+![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![DuckDB](https://img.shields.io/badge/SQL-DuckDB-FFF000?logo=duckdb&logoColor=black)
+![React + TypeScript](https://img.shields.io/badge/React-TypeScript-3178C6?logo=typescript&logoColor=white)
+![Synthetic data](https://img.shields.io/badge/data-100%25%20synthetic-5ce1c6)
 
-```sh
-cd ~/Documents/lead-to-booking-dashboard
-.venv/bin/python -m streamlit run app.py
-```
+<img src="docs/assets/hero.jpg" alt="Leadflow overview: a large editorial headline reading 'From first hello to finished job', a circular gauge showing 45.6% of 720 inquiries booked, and five KPI cards for inquiries, conversion, response time, completed jobs, and cancellations" width="100%">
 
-Open http://127.0.0.1:8501. No account, API key, model, or database server is needed. The app binds to your computer only.
+</div>
 
-## Fresh installation
+> **Every record in this project is synthetic.** Harbor Home Services is a fictional business. The demo shows the workflow and the analysis. It makes no claims about real business results.
 
-Requires Python 3.11+ (3.11 used for the tested setup) and Git.
+## The problem, in plain English
+
+A small home-services company tracks its work in three spreadsheets: one for **inquiries** (someone asks for a quote), one for **bookings** (an appointment is made), and one for **completed jobs**. Because they live apart, the owner can't easily answer the Monday-morning questions:
+
+- *Who asked for help and never heard back?*
+- *Where do bookings fall through?*
+- *Which lead sources actually turn into finished, paid work?*
+
+Leadflow checks the three files for problems, links every job back to the booking and inquiry it came from, and turns them into one trustworthy picture, with a follow-up list and a one-page weekly brief the owner can act on.
+
+## See it move
+
+Every glowing particle below is **one real inquiry record**. It flows from its lead source through first response and booking to the furthest outcome it reached. Leads that never book drift away at the booking stage. Hover a particle to identify it, or click it to open the full record.
+
+<img src="docs/assets/current.webp" alt="Animated Sankey flow where hundreds of colored particles travel from lead sources, through first response and booking, to completed jobs, scheduled appointments, or cancellations. Never-booked particles scatter off at the booking column." width="100%">
+
+## Feature tour
+
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/tide.jpg" alt="Tide chart: a daily inquiry area chart with a draggable date-range selection"><br><b>Tide chart.</b> Drag across the daily timeline, or use the arrow keys on a handle, to choose which inquiry cohort the whole dashboard describes.</td>
+<td width="50%"><img src="docs/assets/sources.jpg" alt="Lead source comparison with glowing horizontal bars and sample sizes"><br><b>Lead sources.</b> Compare volume, conversion, response speed, jobs, and job value. Bars re-sort when you switch metrics, sample sizes are always shown, and an exact table is one click away.</td>
+</tr>
+<tr>
+<td><img src="docs/assets/attention.jpg" alt="Needs-attention view with a pulsing list of 73 unanswered inquiries and a table of cancelled and no-show bookings"><br><b>Needs attention.</b> Leads waiting more than 24 hours with no reply and no booking, oldest first, next to every cancelled or missed booking. Both download as CSV.</td>
+<td><img src="docs/assets/drawer.jpg" alt="Record drawer showing a vertical timeline for inquiry I0391: received, first response, a no-show booking, and a completed booking with job value"><br><b>Voyage log.</b> Open any inquiry to see its response, every booking, and any completed job. Repeat bookings stay visible without double-counting the lead.</td>
+</tr>
+<tr>
+<td><img src="docs/assets/brief.jpg" alt="Weekly operations brief printed on lined paper with a red SYNTHETIC DEMO stamp and a suggested action"><br><b>Weekly dispatch.</b> A one-page Monday brief for the last full week, with one rule-based next step. Every sentence is generated by fixed rules, not AI, and traces to a visible number.</td>
+<td><img src="docs/assets/intake.jpg" alt="Data intake with a three-slot drop zone and a paper import receipt showing rows read, accepted, and duplicates removed"><br><b>Data intake.</b> Drop three CSV exports. Validation prints a receipt showing rows read, rows accepted, duplicates removed, and values normalized.</td>
+</tr>
+<tr>
+<td><img src="docs/assets/failure.jpg" alt="Import paused screen: 1 issue needs fixing, with file, row, column, issue code, and repair guidance"><br><b>Honest failures.</b> A broken file stops the import and <i>clears every metric</i>. Each issue lists the file, row, column, and how to fix it.</td>
+<td><img src="docs/assets/palette.jpg" alt="Command palette searching for inquiry IDs starting with I04"><br><b>⌘K anywhere.</b> Jump to any inquiry, section, download, or theme from the command palette.</td>
+</tr>
+<tr>
+<td><img src="docs/assets/day-hero.jpg" alt="The same overview in a warm paper-colored day theme"><br><b>Night and day.</b> A warm paper-chart day theme grows in as a circle from the toggle.</td>
+<td><img src="docs/assets/mobile.jpg" alt="Three phone-sized screenshots: the hero, the source comparison, and the follow-up queue"><br><b>Works on phones.</b> Layouts reflow down to 390 px wide, and the filter dock scrolls.</td>
+</tr>
+</table>
+
+### Small details
+
+- **Numbers never lie in motion.** When filters change, digits slide from the old value to the new one. They never count up through values that don't exist.
+- **Film grain, aurora, and a sweeping lighthouse beam** set the "harbor at night" mood, and every panel has a cursor-following spotlight.
+- **Accessible by default.** Reduced-motion settings pause the particle flow and turn off decorative effects. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard. Hidden data tables describe the flow chart for screen readers.
+- **Offline-friendly.** Fonts are bundled, and no account, API key, or internet connection is needed after installation.
+
+## Quick start
+
+You need **Python 3.11+**, **Node.js 20.19+ or 22.12+**, and **Git**.
 
 ```sh
 git clone https://github.com/Hasnain3201/lead-to-booking-dashboard.git
 cd lead-to-booking-dashboard
+
+# Python environment and the analytics package
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 python -m pip install -r requirements.lock.txt
 python -m pip install -e . --no-deps --no-build-isolation
-python -m streamlit run app.py
+
+# Build the interface once
+npm --prefix frontend ci
+npm --prefix frontend run build
+
+# Run it
+python serve.py
 ```
 
-The repository starts private, so cloning requires access. `requirements.lock.txt` records the installed runtime, test, formatting, and packaging dependencies. To deliberately re-resolve later, install `.[dev]` in a fresh environment, run checks, and regenerate the lock.
+Your browser opens **http://127.0.0.1:8765**. The server listens on your computer only. Press Control-C to stop it.
 
-## Included foundation
+On a Mac, you can double-click **`open-dashboard.command`** instead. It builds the interface the first time and then starts everything.
 
-- Reproducible 12-week dataset: 720 inquiries, 345 bookings, 261 completed jobs.
-- CSV upload with explicit contracts, normalization receipt, duplicate handling, and relationship checks.
-- DuckDB SQL that aggregates to one row per inquiry before calculating metrics.
-- Overview, source comparisons, unanswered inquiry queue, data quality, and a weekly brief.
-- Date/source/service filters, record drill-down, and CSV/Markdown downloads.
-- Meaningful metric and validation tests, Streamlit smoke tests, Ruff, and GitHub Actions.
+<details>
+<summary><b>Other ways to run it</b></summary>
 
-See the [detailed implementation plan](docs/IMPLEMENTATION-PLAN.md) for remaining milestones. This foundation is runnable; it is not a completed real-business pilot or a production multi-user service.
+| Goal | Command |
+|---|---|
+| Develop the interface with hot reload | Run `python serve.py --no-browser`, then `npm --prefix frontend run dev` and open http://localhost:5173 |
+| Use a different port | `python serve.py --port 9000` |
+| Classic Streamlit analyst view | `python -m streamlit run app.py` |
+| Public demo without uploads | `LEADFLOW_DISABLE_UPLOADS=1 python serve.py` |
+| Regenerate the synthetic data | `python scripts/generate_demo.py` (seed 42, snapshot 2026-09-21) |
+| Regenerate README screenshots | Start the app, then `python scripts/capture_screenshots.py --scale 1.5 --jpeg --animate --out docs/assets` (needs Google Chrome) |
 
-## Verify or regenerate
+</details>
+
+## Try it with your own files
+
+The **Data intake** section accepts three UTF-8 CSV files with these exact headers:
+
+| File | Columns |
+|---|---|
+| `inquiries.csv` | `inquiry_id, created_at, source, service, first_response_at` |
+| `bookings.csv` | `booking_id, inquiry_id, booked_at, scheduled_at, status` |
+| `jobs.csv` | `job_id, booking_id, completed_at, revenue_usd` |
+
+Timestamps need a timezone, for example `2026-09-14T10:00:00Z`. Example files are in [`data/demo/`](data/demo), and the app can download them for you. Use **Load a broken sample** to watch validation reject a bookings file that references a missing inquiry. The full rules are in the [CSV contract](docs/DATA-CONTRACT.md).
+
+## How it works
+
+```mermaid
+flowchart LR
+    A["Three CSV files"] --> B["Validate and normalize<br/>(pandas)"]
+    B -- "any issue" --> X["Issue report<br/>no metrics shown"]
+    B -- "valid" --> C["In-memory DuckDB"]
+    C --> D["SQL: one row<br/>per inquiry"]
+    D --> E["Python metrics<br/>and weekly brief"]
+    E --> F["Local JSON API<br/>(Starlette)"]
+    F --> G["React interface<br/>flow · tide · records"]
+    F --> H["CSV and Markdown<br/>downloads"]
+```
+
+- **One row per inquiry, always.** The SQL first totals jobs per booking, then bookings per inquiry, and only then calculates rates. A lead with three bookings still counts once toward conversion and response time. See [`sql/cohort.sql`](sql/cohort.sql).
+- **Python is the single source of truth.** The interface formats and draws what the API returns and never recalculates a metric. Tests reconcile the API against the same functions.
+- **Strict, explainable validation.** Conflicting IDs, orphan records, impossible timelines, unknown categories, and fractional cents block the whole import, with the file, row, and column of each problem.
+- **Uploads stay in memory.** Files are parsed without touching disk, limited to 5 MB each, and discarded when the server stops.
+
+## What the numbers mean
+
+| Metric | Definition |
+|---|---|
+| **Booked at least once** | Inquiries with one or more bookings ÷ all inquiries. A cancelled booking still counts as booked. |
+| **Average first response** | Mean hours from inquiry to first recorded reply. Missing replies are excluded, never counted as zero, and coverage is shown next to it. |
+| **Completed jobs** | Job records belonging to the selected inquiries. Job value is not profit, cash collected, or return on ad spend. |
+| **Cancellation rate** | Cancelled bookings ÷ all bookings from these inquiries. No-shows are reported separately. |
+| **Needs a reply** | No recorded response, no booking, and at least 24 hours old at the snapshot. |
+
+Date filters select *when inquiries arrived*; their outcomes count through the data snapshot. The full definitions and caveats are in [METRICS.md](docs/METRICS.md).
+
+## Tests and checks
 
 ```sh
 source .venv/bin/activate
-ruff check .
-ruff format --check .
-pytest -q
-python scripts/generate_demo.py
+ruff check . && ruff format --check .
+pytest -q                               # 57 tests: metrics, validation, API, and Streamlit
+npm --prefix frontend run lint
+npm --prefix frontend run build         # TypeScript type check and production build
 ```
 
-Regeneration uses seed 42 and the fixed snapshot `2026-09-21T00:00:00Z`; it overwrites only the committed synthetic demo and deliberately invalid fixture files.
+The tests use tiny hand-calculated datasets to prove the math (for example, that a repeat booking can't inflate the response average), reject every class of bad input, and reconcile every API view and export with authoritative totals. GitHub Actions runs all of this on every push. Reproducible load measurements are in [PERFORMANCE.md](docs/PERFORMANCE.md).
 
-## Read next
+## Project structure
 
-- [Implementation plan](docs/IMPLEMENTATION-PLAN.md): phases, scope, acceptance criteria, architecture, estimates.
-- [Owner requirements](docs/REQUIREMENTS.md) and [source mapping](docs/SOURCE-MAPPING.md).
-- [Metric definitions](docs/METRICS.md): formulas, denominators, attribution, caveats.
-- [CSV contract](docs/DATA-CONTRACT.md): exact inputs and import behavior.
-- [Demo walkthrough](docs/DEMO-GUIDE.md): a short presentation and acceptance checklist.
-- [Design direction](docs/DESIGN-DIRECTION.md) and [frontend prototype data](docs/FRONTEND-DATA.md).
-- [Synthetic performance measurements](docs/PERFORMANCE.md).
-- [Development handoff](docs/HANDOFF.md): current state, checks, next actions, usage cutoff.
+```text
+serve.py                  Start the local app (API + interface)
+frontend/                 React + TypeScript interface (Vite, D3, Motion)
+  src/components/         Flow, tide chart, sources, attention, records, drawer, intake…
+src/leadflow/
+  data.py                 CSV contracts, validation, issue reports
+  analytics.py            DuckDB integration, metrics, weekly brief, exports
+  api.py                  Local JSON API over the analytics
+sql/cohort.sql            Inquiry-level aggregation
+app.py                    Classic Streamlit view
+scripts/                  Demo generator, benchmark, JSON export, screenshot capture
+data/demo/                Synthetic CSVs (720 inquiries, 345 bookings, 261 jobs)
+data/invalid/             A deliberately broken bookings file
+tests/                    pytest suite
+docs/                     Metrics, contract, design direction, plan, guides, images
+```
 
-No private uploads are saved by the application. Never commit real customer data. In-memory processing is not an access-control system; review privacy and hosting design before any real-data/shared deployment.
+## Limitations
+
+- **Synthetic data only.** Patterns such as referrals converting best were built into the generator on purpose. They are not market findings.
+- **Descriptive, not causal.** Source differences describe this snapshot. There is no advertising cost data, so there is no ROI.
+- **One snapshot.** The files record current booking status only, so historical status changes can't be reconstructed.
+- **No capacity model.** A cancellation is not treated as an empty appointment slot.
+- **Single local user.** There are no accounts or hosted database. In-memory processing is not an access-control system, so review privacy and hosting before using real customer data.
+
+## Read more
+
+- [Metric definitions](docs/METRICS.md) and [CSV contract](docs/DATA-CONTRACT.md)
+- [Design direction and research board](docs/DESIGN-DIRECTION.md)
+- [Frontend data API](docs/FRONTEND-DATA.md)
+- [Owner requirements](docs/REQUIREMENTS.md) and [source mapping](docs/SOURCE-MAPPING.md)
+- [Three-minute demo script and acceptance checklist](docs/DEMO-GUIDE.md)
+- [Implementation plan](docs/IMPLEMENTATION-PLAN.md) and [performance notes](docs/PERFORMANCE.md)
+
+---
+
+<div align="center">
+Designed and built by <b>Hasnain Shahzad</b>.
+</div>
