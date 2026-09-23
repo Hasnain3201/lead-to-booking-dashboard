@@ -54,7 +54,14 @@ else:
 try:
     bundle = load_bundle(inputs, snapshot)
 except DataQualityError as exc:
-    st.error(f"Import paused: {exc}")
+    st.error(f"Import paused: {exc.issue_count} issue(s) found.")
+    st.dataframe(exc.issues, hide_index=True, width="stretch")
+    st.download_button("Download import issues", safe_csv(exc.issues), "import-issues.csv")
+    st.caption(
+        "Row numbers count CSV records, starting with header row 1. "
+        "For quoted multiline values, this may differ from text-editor line numbers. "
+        "Up to 200 issues are shown; correct field errors before relationship checks run."
+    )
     st.caption(
         "Correct the source file and re-upload the full bundle. No partial metrics are shown."
     )

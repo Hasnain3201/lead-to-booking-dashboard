@@ -198,3 +198,120 @@ def test_weekly_response_coverage_and_channel_reconciliation():
     assert "50.0% coverage; mean response time: 4.0 hours" in brief
     empty = weekly_summary(cohort.iloc[:0], bundle.snapshot)
     assert "N/A coverage; mean response time: N/A" in empty
+
+
+def test_issue_report_collects_fields_across_files_with_original_rows():
+    t = fixture_inputs()
+    t["inquiries"] = pd.concat(
+        [t["inquiries"].iloc[:1], t["inquiries"].iloc[:1], t["inquiries"].iloc[1:]],
+        ignore_index=True,
+    )
+    t["inquiries"].loc[2, "service"] = "invalid"
+    t["inquiries"].loc[3, "created_at"] = "bad-date"
+    t["jobs"].loc[0, "revenue_usd"] = "-20"
+    with pytest.raises(DataQualityError) as caught:
+        load_fixture(t)
+    issues = caught.value.issues
+    assert caught.value.issue_count == 3
+    assert set(zip(issues.file, issues.row, issues.column)) == {
+        ("inquiries.csv", 4, "service"),
+        ("inquiries.csv", 5, "created_at"),
+        ("jobs.csv", 2, "revenue_usd"),
+    }
+    assert issues.repair.str.len().min() > 10
+
+
+def test_issue_report_collects_independent_relationship_errors():
+    t = fixture_inputs()
+    t["bookings"].loc[1, "inquiry_id"] = "MISSING"
+    t["jobs"].loc[0, "booking_id"] = "MISSING"
+    with pytest.raises(DataQualityError) as caught:
+        load_fixture(t)
+    assert caught.value.issue_count == 3  # Two orphans and completed booking without job.
+    assert set(caught.value.issues.code) == {"orphan_id", "missing_job"}
+
+
+def test_issue_report_is_bounded_but_counts_all_field_errors():
+    t = fixture_inputs()
+    rows = pd.concat([t["inquiries"].iloc[:1]] * 250, ignore_index=True)
+    rows["inquiry_id"] = [f"I{n}" for n in range(250)]
+    rows["service"] = "bad"
+    t["inquiries"] = rows
+    with pytest.raises(DataQualityError) as caught:
+        load_fixture(t)
+    assert caught.value.issue_count == 250
+    assert len(caught.value.issues) == 200
+    assert caught.value.issues.row.tolist() == list(range(2, 202))
+
+
+def test_missing_and_malformed_files_are_reported_together():
+    from io import BytesIO
+
+    inputs = serialize(fixture_inputs())
+    del inputs["bookings"]
+    inputs["jobs"] = BytesIO(b"\xff\xfeinvalid")
+    with pytest.raises(DataQualityError) as caught:
+        load_bundle(inputs, SNAPSHOT)
+    assert set(caught.value.issues.code) == {"missing_file", "unreadable_file"}
+
+
+@pytest.mark.parametrize("snapshot", [None, "nonsense", "NaT"])
+def test_invalid_snapshot_is_actionable(snapshot):
+    with pytest.raises(DataQualityError) as caught:
+        load_bundle(serialize(fixture_inputs()), snapshot)
+    assert caught.value.issues.code.tolist() == ["invalid_snapshot"]
+
+
+def test_mixed_offsets_represent_same_elapsed_time():
+    t = fixture_inputs()
+    t["inquiries"].loc[0, "created_at"] = "2026-09-14T06:00:00-04:00"
+    t["inquiries"].loc[0, "first_response_at"] = "2026-09-14T14:00:00+02:00"
+    cohort = cohort_table(load_fixture(t), ROOT / "sql/cohort.sql")
+    assert cohort.loc[cohort.inquiry_id.eq("I1"), "response_hours"].item() == 2
+
+
+def test_no_bookings_and_blank_input_record_are_handled():
+    t = fixture_inputs()
+    t["bookings"] = t["bookings"].iloc[:0]
+    t["jobs"] = t["jobs"].iloc[:0]
+    result = metrics(cohort_table(load_fixture(t), ROOT / "sql/cohort.sql"))
+    assert result["conversion"] == 0
+    assert result["cancellation_rate"] is None
+    inputs = serialize(t)
+    inputs["inquiries"] = StringIO(inputs["inquiries"].getvalue() + "\n")
+    with pytest.raises(DataQualityError) as caught:
+        load_bundle(inputs, SNAPSHOT)
+    assert "required_value" in set(caught.value.issues.code)
+
+
+@pytest.mark.parametrize(
+    "amount",
+    ["0.001", "1.000000000000000000000000001", "1000000001", "1e309", "1_000", "NaN", "-0.01"],
+)
+def test_amounts_are_validated_without_float_rounding(amount):
+    t = fixture_inputs()
+    t["jobs"].loc[0, "revenue_usd"] = amount
+    with pytest.raises(DataQualityError):
+        load_fixture(t)
+
+
+def test_revenue_is_aggregated_in_integer_cents():
+    t = fixture_inputs()
+    t["bookings"].loc[1, "status"] = "completed"
+    t["jobs"].loc[0, "revenue_usd"] = "0.10"
+    t["jobs"].loc[1] = ["J2", "B2", "2026-09-16T12:00:00Z", "0.20"]
+    bundle = load_fixture(t)
+    cohort = cohort_table(bundle, ROOT / "sql/cohort.sql")
+    assert bundle.tables["jobs"].revenue_cents.tolist() == [10, 20]
+    assert cohort.revenue_cents.sum() == 30
+    assert metrics(cohort)["revenue_usd"] == 0.30
+
+
+def test_excess_csv_fields_do_not_become_a_hidden_index():
+    inputs = serialize(fixture_inputs())
+    inputs["jobs"] = StringIO(
+        "job_id,booking_id,completed_at,revenue_usd\nEXTRA,J1,B1,2026-09-15T12:00:00Z,100\n"
+    )
+    with pytest.raises(DataQualityError) as caught:
+        load_bundle(inputs, SNAPSHOT)
+    assert caught.value.issues.code.tolist() == ["row_width"]

@@ -36,3 +36,31 @@ def test_inquiry_detail_follows_filters():
     app.sidebar.multiselect[0].set_value([]).run()
     assert not app.exception
     assert len(app.selectbox) == 0
+
+
+def test_invalid_import_clears_previous_metrics_and_exposes_repair_report(monkeypatch):
+    from leadflow.data import DataQualityError
+
+    app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=30).run()
+    assert app.metric[0].value == "720"
+
+    def invalid(*args):
+        raise DataQualityError(
+            [
+                {
+                    "file": "jobs.csv",
+                    "row": 2,
+                    "column": "revenue_usd",
+                    "code": "invalid_amount",
+                    "issue": "Invalid amount",
+                    "repair": "Correct the source amount.",
+                }
+            ]
+        )
+
+    monkeypatch.setattr("leadflow.data.load_bundle", invalid)
+    app.run()
+    assert not app.exception
+    assert len(app.metric) == 0
+    assert "1 issue(s)" in app.error[0].value
+    assert app.dataframe[0].value.iloc[0]["file"] == "jobs.csv"

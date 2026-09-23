@@ -42,7 +42,7 @@ def metrics(df):
         "cancellation_rate": float(df.cancellations.sum()) / bookings if bookings else None,
         "no_shows": int(df.no_shows.sum()),
         "completed_jobs": int(df.completed_jobs.sum()),
-        "revenue_usd": float(df.revenue_usd.sum()),
+        "revenue_usd": int(df.revenue_cents.sum()) / 100,
     }
 
 
@@ -129,5 +129,8 @@ def booking_details(bundle, selected):
         inquiries, on="inquiry_id", how="inner", validate="many_to_one"
     )
     return bookings.merge(
-        bundle.tables["jobs"], on="booking_id", how="left", validate="one_to_one"
+        bundle.tables["jobs"].drop(columns="revenue_cents"),
+        on="booking_id",
+        how="left",
+        validate="one_to_one",
     ).sort_values(["scheduled_at", "booking_id"])
