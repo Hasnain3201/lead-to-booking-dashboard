@@ -25,7 +25,7 @@ No login system, hosted database, LLM calls, predictive scoring, live CRM sync, 
 | Charts | Plotly | Interactive funnel, weekly trends, and source comparison |
 | Tests | pytest + Streamlit AppTest | Hand-calculated metric fixtures, edge cases, UI behavior |
 | Style checks | Ruff | Consistent formatting and basic static checks |
-| Version control | Git + private GitHub repo | Reviewable milestones; switch public only when requested |
+| Version control | Git + private GitHub repo | Private during development; public after final design and showcase phase |
 | CI | GitHub Actions | Run checks on pushes and pull requests |
 
 The SQL first aggregates completed jobs per booking, then bookings per inquiry. Only then does the dashboard compute inquiry metrics. This prevents repeat bookings from double-counting leads or weighting response-time averages incorrectly.
@@ -116,7 +116,7 @@ Acceptance: every statement can be traced to a visible table or metric; sparse d
 1. Ask a friend or stakeholder to perform three tasks: find an unanswered inquiry, identify a source with completed jobs, and explain cancellation rate.
 2. Record observations, task completion, misunderstandings, and revisions. Feedback is actual evidence; synthetic outcomes are not.
 3. Add screenshots, a 90-second demo recording, architecture diagram, and a short case study describing the problem and choices.
-4. Confirm the repository contains only synthetic data; then make it public if requested.
+4. Complete the final frontend and showcase phase below, verify repository contents and history, then make it public as authorized on September 23, 2026.
 5. Optionally deploy a **demo-only** app. Disable user uploads on a public deployment until hosting privacy, retention, and access controls are designed. Hosting is not part of this initial setup.
 
 Acceptance: another person can clone and launch using the README; the case study labels all demo data; the presenter can explain at least three implementation tradeoffs without relying on code jargon.
@@ -128,6 +128,38 @@ Get explicit permission to use anonymized exports. Map their fields, agree metri
 Acceptance: the owner verifies totals against source records and reports a concrete decision the dashboard helped with. Only then consider evidence-based resume statements about business impact.
 
 Estimated remaining demo work: roughly **16–24 focused hours** beyond this foundation, depending on refinement. This is a planning estimate, not a claim about completed effort.
+
+## Required final phase: distinctive frontend and public showcase
+
+User request recorded September 23, 2026. After the functional demo is complete, deliver a beautiful, unique, visually impressive frontend with playful effects, followed by a polished public repository. This is required scope, not an optional suggestion. The optional real-business pilot does not block this phase.
+
+### Research and visual direction
+
+- At the start of this phase, research current frontend projects and design examples online. Use several independent sources, including actual live products, creative developer portfolios, and modern open-source interfaces; do not rely only on remembered trends or one template.
+- Discover relevant design/frontend skills and tools available at that time, read the useful ones, and apply them where they improve the result.
+- Save a reference board with source links and notes about typography, composition, color, motion, chart treatment, and interaction. Draw inspiration without copying another project's identity or unlicensed assets.
+- Develop a cohesive original visual identity for Leadflow: distinctive typography, a considered color palette, expressive layouts, custom chart styling, and memorable visual details. The target is an exceptional portfolio centerpiece, not the default appearance of a dashboard framework.
+- Reassess the frontend stack after research. If Streamlit prevents the desired result, plan a dedicated frontend while preserving the tested Python/SQL analytics and data contracts. Do not decide the replacement stack prematurely or constrain the redesign to a cosmetic theme change.
+
+### Interaction and visual implementation
+
+- Include tasteful fun effects: animated data reveals, smooth transitions, responsive hover/focus feedback, and one or two signature interactions that fit the lead-to-booking story.
+- Keep motion purposeful and numbers readable. Support reduced motion, keyboard use, clear focus states, and touch devices; avoid effects that obstruct tasks or make metrics misleading.
+- Design the full experience: overview, filters, imports, validation errors, empty/loading states, record details, source comparisons, downloads, and weekly briefs.
+- Verify desktop and mobile layouts, animation performance, readability, and all existing analytical behavior. Retain the synthetic-data labeling.
+
+### README and repository presentation
+
+- Create an attractive README with a strong hero image, real screenshots of the finished interface, a feature tour, and an animated preview or short demo where useful.
+- Include a plain-English problem/solution explanation, exact quick-start commands, example input files, an architecture diagram, metric definitions, testing instructions, limitations, and a clear project structure.
+- Use actual final-app captures rather than mockups that imply unimplemented features. Store optimized images in a dedicated documentation asset folder with useful alt text. Check every link and command from a fresh checkout.
+- Attribute authorship only to Hasnain Shahzad. Do not add tool credits or co-author trailers to project prose, code, comments, or commits. Preserve any third-party notices required by asset or dependency licenses.
+
+### Public launch authorization and completion
+
+The user explicitly authorized making the GitHub repository public **once the project and this presentation phase are finished**. Keep it private until then. Before changing visibility, review tracked files and Git history for secrets, private data, and local session metadata; retain only suitable project materials and synthetic data. This is an authorized future action and does not require asking again solely because it changes the repository's visibility. Website deployment remains separate scope.
+
+Acceptance: a distinctive, polished interface; useful and accessible effects; verified desktop/mobile workflows; accurate screenshots and feature descriptions; a reproducible README; passing checks; and a public repository whose final presentation is ready to share. The previous 16–24-hour estimate excludes this newly requested design work; estimate it after the visual research and stack decision.
 
 ## Test and review strategy
 
