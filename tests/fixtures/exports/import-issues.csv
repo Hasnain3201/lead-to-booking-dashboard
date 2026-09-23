@@ -1,0 +1,2 @@
+file,row,column,code,issue,repair
+bookings.csv,347,inquiry_id,orphan_id,bookings: inquiry_id does not exist in inquiries,Restore the missing inquiry or correct the reference from the source.
