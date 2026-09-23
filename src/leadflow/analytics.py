@@ -7,6 +7,15 @@ import pandas as pd
 
 from leadflow.data import Bundle
 
+SOURCE_LABELS = {
+    "google_ads": "Google Ads",
+    "organic_search": "Organic search",
+    "referral": "Referral",
+    "social": "Social",
+    "walk_in": "Walk-in",
+    "unknown": "Unknown-source",
+}
+
 
 def cohort_table(bundle: Bundle, sql_path: Path) -> pd.DataFrame:
     with duckdb.connect(":memory:") as conn:
@@ -49,6 +58,51 @@ def metrics(df):
 def source_metrics(df):
     rows = [{"source": source, **metrics(group)} for source, group in df.groupby("source")]
     return pd.DataFrame(rows)
+
+
+def inquiry_outcomes(df):
+    """Furthest outcome reached by each inquiry: completed > scheduled > lost > unbooked."""
+    # Each completed booking has exactly one job, so the remainder are still scheduled.
+    scheduled = df.bookings - df.cancellations - df.no_shows - df.completed_jobs
+    outcome = pd.Series("unbooked", index=df.index)
+    outcome[df.bookings.gt(0)] = "lost"
+    outcome[scheduled.gt(0)] = "scheduled"
+    outcome[df.completed_jobs.gt(0)] = "completed"
+    return outcome
+
+
+def flow_paths(df):
+    """Inquiry counts by source, response status, and furthest outcome."""
+    columns = ["source", "responded", "outcome", "inquiries"]
+    if df.empty:
+        return pd.DataFrame(columns=columns)
+    paths = pd.DataFrame(
+        {
+            "source": df.source,
+            "responded": df.first_response_at.notna(),
+            "outcome": inquiry_outcomes(df),
+        }
+    )
+    return paths.groupby(columns[:3]).size().rename("inquiries").reset_index()
+
+
+def daily_trend(df):
+    """Inquiries created per UTC day, with how many of them booked or completed work."""
+    columns = ["date", "inquiries", "booked_leads", "completed_leads"]
+    if df.empty:
+        return pd.DataFrame(columns=columns)
+    daily = (
+        df.set_index("created_at")
+        .resample("D")
+        .agg(
+            inquiries=("inquiry_id", "count"),
+            booked_leads=("bookings", lambda values: int(values.gt(0).sum())),
+            completed_leads=("completed_jobs", lambda values: int(values.gt(0).sum())),
+        )
+    )
+    daily = daily.reset_index().rename(columns={"created_at": "date"})
+    daily["date"] = daily.date.dt.strftime("%Y-%m-%d")
+    return daily[columns]
 
 
 def attention_queue(df, snapshot):
@@ -95,7 +149,8 @@ def weekly_summary(df, snapshot, synthetic=True):
         action = "Review cancellations and confirm whether replacement bookings were made."
     else:
         source = queue.groupby("source").size().idxmax()
-        action = f"Review the unanswered {source} inquiries first and assign a follow-up owner."
+        label = SOURCE_LABELS.get(source, source)
+        action = f"Review the unanswered {label} inquiries first and assign a follow-up owner."
     if current.empty:
         action = "Import records for the last full week before drawing conclusions."
     lines += [

@@ -7,6 +7,9 @@ import pytest
 from leadflow.analytics import (
     attention_queue,
     cohort_table,
+    daily_trend,
+    flow_paths,
+    inquiry_outcomes,
     metrics,
     safe_csv,
     select_cohort,
@@ -144,7 +147,7 @@ def test_weekly_summary_and_export_safety():
     assert "2026-09-14 to 2026-09-20" in brief
     assert "Inquiries: 4 (+4" in brief
     assert "SYNTHETIC DEMO" in brief
-    assert "social" in brief
+    assert "Review the unanswered Social inquiries first" in brief
     assert "'=SUM" in safe_csv(pd.DataFrame({"id": ["=SUM(1)"]})).decode()
 
 
@@ -334,3 +337,33 @@ def test_frontend_demo_export_uses_authoritative_metrics():
         == decoded["summary"]["revenue_usd"]
     )
     assert "SYNTHETIC DEMO" in decoded["weekly_brief"]
+
+
+def test_outcomes_flow_and_daily_trend_use_inquiry_grain():
+    cohort = cohort_table(load_fixture(), ROOT / "sql/cohort.sql")
+    outcomes = dict(zip(cohort.inquiry_id, inquiry_outcomes(cohort)))
+    # I1 has a completed and a cancelled booking; the completed job is its furthest outcome.
+    assert outcomes == {"I1": "completed", "I2": "unbooked", "I3": "lost", "I4": "unbooked"}
+    flow = flow_paths(cohort)
+    assert flow.inquiries.sum() == 4
+    referral = flow.loc[flow.source.eq("referral")].set_index("outcome").inquiries.to_dict()
+    assert referral == {"completed": 1, "lost": 1}
+    assert not flow.loc[flow.source.eq("social"), "responded"].any()
+    daily = daily_trend(cohort).set_index("date")
+    assert daily.loc["2026-09-14"].tolist() == [2, 1, 1]
+    assert daily.inquiries.sum() == 4
+    assert daily_trend(cohort.iloc[0:0]).empty and flow_paths(cohort.iloc[0:0]).empty
+
+
+def test_pending_booking_is_scheduled_outcome():
+    tables = fixture_inputs()
+    tables["bookings"].loc[len(tables["bookings"])] = [
+        "B4",
+        "I4",
+        "2026-09-20T23:00:00Z",
+        "2026-09-25T10:00:00Z",
+        "scheduled",
+    ]
+    cohort = cohort_table(load_fixture(tables), ROOT / "sql/cohort.sql")
+    outcomes = dict(zip(cohort.inquiry_id, inquiry_outcomes(cohort)))
+    assert outcomes["I4"] == "scheduled"

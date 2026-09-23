@@ -11,6 +11,8 @@ All dashboard filters use **inquiry cohorts**: select inquiries by creation date
 | Recorded job revenue | Sum of completed-job revenue in USD | Job value only, not collected cash, profit, ROI, or uplift |
 | Follow-up queue | No response, no booking, and age >=24 elapsed hours at snapshot | Calendar hours, including weekends; decision aid, not an automated contact list |
 | Funnel final stage | Inquiries with at least one completed job | Counts leads rather than jobs so funnel stages use the same unit |
+| Furthest outcome (flow view) | Per inquiry: completed job if any booking has a job; otherwise still scheduled if any booking is scheduled; otherwise cancelled/no-show if booked; otherwise never booked | One path per inquiry, so the flow totals equal the inquiry count; a lead with a completed and a cancelled booking appears as completed |
+| Daily timeline | Inquiries created per UTC day, and how many of those inquiries booked or completed a job by the snapshot | Honors source/service filters, ignores the date range so the whole period stays visible for selection |
 
 Empty denominators display N/A. Valid cohorts with zero jobs show zero jobs and $0 revenue. Lead source is attributed to the original inquiry; no multi-touch attribution is attempted.
 
