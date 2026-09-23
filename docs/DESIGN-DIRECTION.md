@@ -1,6 +1,6 @@
 # Design direction: Harbor Observatory
 
-Leadflow's interface should feel like a calm, beautiful night-time instrument for a small service business: editorial where it tells a story, precise where it shows numbers, and playful only where play helps someone understand the data.
+Leadflow's interface should feel like a bright, calm, beautifully made instrument for a small service business: editorial where it tells a story, precise where it shows numbers, and playful only where play helps someone understand the data.
 
 ## Reference board
 
@@ -20,17 +20,17 @@ Research took place September 23, 2026. Sources were read for their published ap
 
 ## Identity
 
-- **Name of the look:** Harbor Observatory. It is night at a harbor: dark water, a sweeping lighthouse beam, sea-glass teal, coral warning flares, and warm paper for anything printed.
+- **Name of the look:** Harbor Observatory, in daylight. Warm porcelain surfaces, near-black ink, jewel-tone data colors, soft paper for anything printed, and a quiet light sweep instead of neon. An earlier night-harbor palette read as too dark and blue, so the bright theme became the default and the dark option became warm graphite.
 - **Type:** Fraunces Variable for display text, using its soft and "wonky" italic axes for signature words (*hello*, *current*, *tide*). Geist Variable for the interface, and Geist Mono for numbers, IDs, and small instrument labels. All fonts are bundled so the app works offline.
-- **Color:** Night theme ink `#04070d`, paper-white text `#f1e9da`, tide `#5ce1c6`, sky `#7cc4ff`, beam `#ffc86b`, rose `#ff8fb1`, lilac `#b4a1ff`, and coral `#ff6f59` for problems. The day theme is a warm paper chart (`#efe7d8`) with deeper versions of the same hues. Each lead source always keeps its own color.
-- **Surfaces:** Frosted glass panels with a cursor-following spotlight and glowing edge, fine chart-grid lines that fade out, animated film grain, and a slow aurora.
+- **Color:** The default Porcelain theme uses background `#f6f4ef`, white panels with hairline borders, ink `#17150f`, and jewel tones: emerald `#16785d`, cobalt `#3659c9`, saffron `#c07d12`, rose `#c4467a`, violet `#7353c9`, and vermilion `#cf4428` for problems. The optional Graphite theme uses a warm `#100f0d` background with lighter versions of the same hues. Each lead source always keeps its own color.
+- **Surfaces:** White panels with soft layered shadows instead of glows, a cursor-following spotlight, fine chart-grid lines that fade out, faint film grain, and a slow pastel aurora (sage, lavender, peach). Glow effects appear only in the dark theme.
 - **Printed artifacts:** The weekly dispatch and import receipt use a light paper stock in both themes, with lined paper, a torn receipt edge, and rubber stamps.
 
 ## Signature interactions
 
-1. **The current.** A Sankey river where each glowing particle is one real inquiry. Particles travel from lead source through first response and booking to the furthest outcome, leaving comet trails. Leads that never book drift away at the booking column. Hover identifies a particle, clicking opens its record, and clicking a source focuses the whole dashboard on it.
+1. **The current.** A Sankey river where each particle is one real inquiry. Particles travel from lead source through first response and booking to the furthest outcome, leaving comet trails. Leads that never book drift away at the booking column. Hover identifies a particle, clicking opens its record, and clicking a source focuses the whole dashboard on it.
 2. **The tide chart.** A daily inquiry timeline you drag across to choose the inquiry cohort, with spring-feel handles, arrow-key control, and presets.
-3. **Lighthouse theme switch.** The new theme grows as a circle from the toggle.
+3. **Theme switch.** The other theme grows as a circle from the toggle.
 4. **Digit-swap numerals.** When filters change, each digit slides from its old value to its new one. Values never count up through made-up intermediate numbers.
 5. **Printed intake.** Validation "prints" a receipt line by line and stamps it VALIDATED. A failed import replaces the dashboard with a clear issue list.
 6. **Small delights:** a ⌘K palette, a floating filter dock, a pulsing follow-up queue, a voyage-log timeline in the record drawer, a particle burst on successful import, and a shimmering headline word.

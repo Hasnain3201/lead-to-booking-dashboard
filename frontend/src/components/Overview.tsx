@@ -97,7 +97,7 @@ export function Hero({ meta, metrics, onPalette }: { meta: Meta; metrics: Metric
                 <linearGradient id="gauge-grad" x1="0" x2="1" y1="0" y2="1">
                   <stop offset="0%" style={{ stopColor: 'var(--c-tide)' }} />
                   <stop offset="60%" style={{ stopColor: 'var(--c-sky)' }} />
-                  <stop offset="100%" style={{ stopColor: 'var(--c-beam)' }} />
+                  <stop offset="100%" style={{ stopColor: 'var(--c-lilac)' }} />
                 </linearGradient>
               </defs>
               <motion.g
@@ -125,7 +125,7 @@ export function Hero({ meta, metrics, onPalette }: { meta: Meta; metrics: Metric
                   stroke: 'url(#gauge-grad)',
                   strokeWidth: 10,
                   strokeLinecap: 'round',
-                  filter: 'drop-shadow(0 0 12px var(--c-tide))',
+                  filter: 'drop-shadow(0 0 var(--glow) var(--c-tide))',
                 }}
                 strokeDasharray={circumference}
                 initial={{ strokeDashoffset: circumference }}
@@ -183,7 +183,7 @@ function Split({ parts }: { parts: { value: number; color: string; label: string
             initial={false}
             animate={{ flexGrow: total ? part.value : 0 }}
             transition={{ type: 'spring', stiffness: 120, damping: 22 }}
-            style={{ flexBasis: 0, background: part.color, boxShadow: `0 0 12px ${part.color}`, minWidth: part.value ? 2 : 0 }}
+            style={{ flexBasis: 0, background: part.color, boxShadow: `0 0 var(--glow) ${part.color}`, minWidth: part.value ? 2 : 0 }}
           />
         ))}
       </div>

@@ -30,34 +30,34 @@ MOBILE = (390, 844)
 
 # name, viewport, theme, JavaScript run before capture, capture full page
 SHOTS = [
-    ("hero", DESKTOP, "night", "window.scrollTo(0, 0)", False),
-    ("current", DESKTOP, "night", "hideDock(); scrollToId('current', 40)", False),
-    ("tide", DESKTOP, "night", "hideDock(); scrollToId('tide', -30)", False),
-    ("sources", DESKTOP, "night", "hideDock(); scrollToId('sources', -30)", False),
-    ("attention", DESKTOP, "night", "hideDock(); scrollToId('attention', -30)", False),
-    ("records", DESKTOP, "night", "hideDock(); scrollToId('records', -30)", False),
-    ("brief", DESKTOP, "night", "hideDock(); scrollToId('brief', -30)", False),
-    ("intake", DESKTOP, "night", "hideDock(); scrollToId('intake', -30)", False),
+    ("hero", DESKTOP, "day", "window.scrollTo(0, 0)", False),
+    ("current", DESKTOP, "day", "hideDock(); scrollToId('current', 40)", False),
+    ("tide", DESKTOP, "day", "hideDock(); scrollToId('tide', -30)", False),
+    ("sources", DESKTOP, "day", "hideDock(); scrollToId('sources', -30)", False),
+    ("attention", DESKTOP, "day", "hideDock(); scrollToId('attention', -30)", False),
+    ("records", DESKTOP, "day", "hideDock(); scrollToId('records', -30)", False),
+    ("brief", DESKTOP, "day", "hideDock(); scrollToId('brief', -30)", False),
+    ("intake", DESKTOP, "day", "hideDock(); scrollToId('intake', -30)", False),
     (
         "drawer",
         DESKTOP,
-        "night",
+        "day",
         "scrollToId('records', -30); searchRecord('I0391')",
         False,
     ),
-    ("palette", DESKTOP, "night", "window.scrollTo(0,0); openPalette('I04')", False),
+    ("palette", DESKTOP, "day", "window.scrollTo(0,0); openPalette('I04')", False),
     (
         "failure",
         DESKTOP,
-        "night",
+        "day",
         "clickText('Load a broken sample');setTimeout(() => clickText('Validate and import'), 900)",
         False,
     ),
-    ("day-hero", DESKTOP, "day", "window.scrollTo(0, 0)", False),
-    ("day-current", DESKTOP, "day", "hideDock(); scrollToId('current', 40)", False),
-    ("mobile-hero", MOBILE, "night", "window.scrollTo(0, 0)", False),
-    ("mobile-sources", MOBILE, "night", "hideDock(); scrollToId('sources', -10)", False),
-    ("mobile-attention", MOBILE, "night", "hideDock(); scrollToId('attention', -10)", False),
+    ("dark-hero", DESKTOP, "night", "window.scrollTo(0, 0)", False),
+    ("dark-current", DESKTOP, "night", "hideDock(); scrollToId('current', 40)", False),
+    ("mobile-hero", MOBILE, "day", "window.scrollTo(0, 0)", False),
+    ("mobile-sources", MOBILE, "day", "hideDock(); scrollToId('sources', -10)", False),
+    ("mobile-attention", MOBILE, "day", "hideDock(); scrollToId('attention', -10)", False),
 ]
 
 HELPERS = """
@@ -190,7 +190,7 @@ def prepare(page, args, viewport, theme, script):
     )
     theme_script = page.send(
         "Page.addScriptToEvaluateOnNewDocument",
-        source=f"localStorage.setItem('leadflow-theme', '{theme}');",
+        source=f"localStorage.setItem('leadflow-theme-v2', '{theme}');",
     )
     page.send("Page.navigate", url=args.url)
     page.evaluate(
@@ -245,7 +245,7 @@ def main():
                 print(save(data, args.out / f"{name}.png", args.jpeg))
             if args.animate:
                 # Virtual time stays paused afterwards, so the recording must come last.
-                prepare(page, args, DESKTOP, "night", "hideDock()")
+                prepare(page, args, DESKTOP, "day", "hideDock()")
                 print(record(page, ".current", args.out / "current.webp"))
     finally:
         chrome.terminate()
@@ -262,7 +262,7 @@ def combine_mobile(out):
     gap = shots[0].width // 12
     width = sum(shot.width for shot in shots) + gap * (len(shots) + 1)
     height = max(shot.height for shot in shots) + gap * 2
-    canvas = Image.new("RGB", (width, height), (4, 7, 13))
+    canvas = Image.new("RGB", (width, height), (234, 230, 222))
     x = gap
     for shot in shots:
         canvas.paste(shot, (x, gap))

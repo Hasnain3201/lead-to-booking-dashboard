@@ -210,7 +210,7 @@ export function Tide({
             <path d={bookedArea(days) ?? ''} style={{ fill: 'url(#tide-booked)' }} />
             <path
               d={bookedArea.lineY1()(days) ?? ''}
-              style={{ fill: 'none', stroke: 'var(--c-tide)', strokeWidth: 1.8, filter: 'drop-shadow(0 0 6px var(--c-tide))' }}
+              style={{ fill: 'none', stroke: 'var(--c-tide)', strokeWidth: 1.8, filter: 'drop-shadow(0 0 var(--glow) var(--c-tide))' }}
             />
             <path
               d={completedLine(days) ?? ''}

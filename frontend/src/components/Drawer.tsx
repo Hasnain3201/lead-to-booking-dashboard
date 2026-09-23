@@ -87,7 +87,7 @@ export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inqui
               <>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
                   <span className="badge" style={{ color: SOURCE_COLORS[inquiry.source] }}>
-                    <span className="dot" style={{ background: 'currentColor', boxShadow: '0 0 10px currentColor' }} />
+                    <span className="dot" style={{ background: 'currentColor', boxShadow: '0 0 var(--glow) currentColor' }} />
                     <span style={{ color: 'var(--ink)' }}>{sourceLabel(inquiry.source)}</span>
                   </span>
                   <span className="badge">{serviceLabel(inquiry.service)}</span>

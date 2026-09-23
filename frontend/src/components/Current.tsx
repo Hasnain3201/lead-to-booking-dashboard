@@ -409,7 +409,7 @@ export function Current({
                   stroke={`url(#lg-${i})`}
                   strokeWidth={Math.max(1, link.width ?? 1)}
                   style={{
-                    opacity: connected(link) ? (hoverNode ? 0.34 : 0.16) : 0.03,
+                    opacity: connected(link) ? (hoverNode ? 0.32 : 'var(--link-opacity)') : 0.03,
                     transition: 'opacity .35s',
                   }}
                 />
@@ -466,7 +466,7 @@ export function Current({
                       rx={3}
                       style={{
                         fill: node.color,
-                        filter: `drop-shadow(0 0 ${hoverNode === node.id ? 14 : 6}px ${node.color})`,
+                        filter: `drop-shadow(0 0 ${hoverNode === node.id ? 'calc(var(--glow) + 6px)' : 'var(--glow)'} ${node.color})`,
                         opacity: faded ? 0.3 : 1,
                         transition: 'filter .3s, opacity .3s',
                       }}

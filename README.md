@@ -30,7 +30,7 @@ Leadflow checks the three files for problems, links every job back to the bookin
 
 ## See it move
 
-Every glowing particle below is **one real inquiry record**. It flows from its lead source through first response and booking to the furthest outcome it reached. Leads that never book drift away at the booking stage. Hover a particle to identify it, or click it to open the full record.
+Every particle below is **one real inquiry record**. It flows from its lead source through first response and booking to the furthest outcome it reached. Leads that never book drift away at the booking stage. Hover a particle to identify it, or click it to open the full record.
 
 <img src="docs/assets/current.webp" alt="Animated Sankey flow where hundreds of colored particles travel from lead sources, through first response and booking, to completed jobs, scheduled appointments, or cancellations. Never-booked particles scatter off at the booking column." width="100%">
 
@@ -39,7 +39,7 @@ Every glowing particle below is **one real inquiry record**. It flows from its l
 <table>
 <tr>
 <td width="50%"><img src="docs/assets/tide.jpg" alt="Tide chart: a daily inquiry area chart with a draggable date-range selection"><br><b>Tide chart.</b> Drag across the daily timeline, or use the arrow keys on a handle, to choose which inquiry cohort the whole dashboard describes.</td>
-<td width="50%"><img src="docs/assets/sources.jpg" alt="Lead source comparison with glowing horizontal bars and sample sizes"><br><b>Lead sources.</b> Compare volume, conversion, response speed, jobs, and job value. Bars re-sort when you switch metrics, sample sizes are always shown, and an exact table is one click away.</td>
+<td width="50%"><img src="docs/assets/sources.jpg" alt="Lead source comparison with colored horizontal bars and sample sizes"><br><b>Lead sources.</b> Compare volume, conversion, response speed, jobs, and job value. Bars re-sort when you switch metrics, sample sizes are always shown, and an exact table is one click away.</td>
 </tr>
 <tr>
 <td><img src="docs/assets/attention.jpg" alt="Needs-attention view with a pulsing list of 73 unanswered inquiries and a table of cancelled and no-show bookings"><br><b>Needs attention.</b> Leads waiting more than 24 hours with no reply and no booking, oldest first, next to every cancelled or missed booking. Both download as CSV.</td>
@@ -54,7 +54,7 @@ Every glowing particle below is **one real inquiry record**. It flows from its l
 <td><img src="docs/assets/palette.jpg" alt="Command palette searching for inquiry IDs starting with I04"><br><b>⌘K anywhere.</b> Jump to any inquiry, section, download, or theme from the command palette.</td>
 </tr>
 <tr>
-<td><img src="docs/assets/day-hero.jpg" alt="The same overview in a warm paper-colored day theme"><br><b>Night and day.</b> A warm paper-chart day theme grows in as a circle from the toggle.</td>
+<td><img src="docs/assets/dark-hero.jpg" alt="The same overview in a warm graphite dark theme"><br><b>Light and dark.</b> A warm graphite dark theme grows in as a circle from the toggle.</td>
 <td><img src="docs/assets/mobile.jpg" alt="Three phone-sized screenshots: the hero, the source comparison, and the follow-up queue"><br><b>Works on phones.</b> Layouts reflow down to 390 px wide, and the filter dock scrolls.</td>
 </tr>
 </table>
@@ -62,7 +62,7 @@ Every glowing particle below is **one real inquiry record**. It flows from its l
 ### Small details
 
 - **Numbers never lie in motion.** When filters change, digits slide from the old value to the new one. They never count up through values that don't exist.
-- **Film grain, aurora, and a sweeping lighthouse beam** set the "harbor at night" mood, and every panel has a cursor-following spotlight.
+- **A soft pastel aurora, fine film grain, and a slow light sweep** give the porcelain surfaces depth, and every panel has a cursor-following spotlight.
 - **Accessible by default.** Reduced-motion settings pause the particle flow and turn off decorative effects. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard. Hidden data tables describe the flow chart for screen readers.
 - **Offline-friendly.** Fonts are bundled, and no account, API key, or internet connection is needed after installation.
 

@@ -26,7 +26,7 @@ const defaults = (meta: Meta): Filters => ({
 })
 
 export default function App() {
-  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme as Theme) ?? 'night')
+  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme as Theme) ?? 'day')
   const [dataset, setDataset] = useState<string | null>('demo')
   const [meta, setMeta] = useState<Meta | null>(null)
   const [filters, setFilters] = useState<Filters | null>(null)
@@ -105,7 +105,7 @@ export default function App() {
     revealTheme(themeButton.current, () => {
       document.documentElement.dataset.theme = next
       try {
-        localStorage.setItem('leadflow-theme', next)
+        localStorage.setItem('leadflow-theme-v2', next)
       } catch {
         /* storage unavailable */
       }
@@ -175,7 +175,7 @@ export default function App() {
       jump('records', 'Records'),
       jump('brief', 'Weekly dispatch'),
       jump('intake', 'Data intake', 'Upload or inspect the receipt'),
-      { id: 'theme', group: 'Actions', label: `Switch to ${theme === 'night' ? 'day' : 'night'} theme`, run: toggleTheme },
+      { id: 'theme', group: 'Actions', label: `Switch to ${theme === 'night' ? 'light' : 'dark'} theme`, run: toggleTheme },
       {
         id: 'reset',
         group: 'Actions',
@@ -242,7 +242,7 @@ export default function App() {
               className="icon-btn"
               type="button"
               onClick={toggleTheme}
-              aria-label={`Switch to ${theme === 'night' ? 'day' : 'night'} theme`}
+              aria-label={`Switch to ${theme === 'night' ? 'light' : 'dark'} theme`}
             >
               <Icon name={theme === 'night' ? 'sun' : 'moon'} size={17} />
             </button>
