@@ -1,4 +1,4 @@
-"""Measure a synthetic in-memory import and SQL pass; not a browser performance claim."""
+"""Measure a generated in-memory import and SQL pass; not a browser performance claim."""
 
 import argparse
 import json

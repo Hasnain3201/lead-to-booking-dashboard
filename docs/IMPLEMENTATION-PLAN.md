@@ -2,9 +2,9 @@
 
 ## Product goal
 
-Help the owner of fictional **Harbor Home Services** answer: **Which inquiries are being missed, where do bookings fall through, and which lead sources produce completed work?**
+Help the owner of a home-service business answer: **Which inquiries are being missed, where do bookings fall through, and which lead sources produce completed work?**
 
-Build a trustworthy, explainable portfolio project for analyst, implementation, solutions, and operations roles. Begin with synthetic records. Demonstrate SQL, data validation, metric definitions, workflow design, and a clear business recommendation. A real client pilot is a separate future phase; never present generated patterns as measured business improvements.
+Build a trustworthy, explainable tool: SQL, data validation, clear metric definitions, workflow design, and a concrete weekly recommendation. It ships with a generated sample workspace so anyone can explore it; piloting with a business is a separate phase. Every number must trace back to the supplied files.
 
 ## Scope and user workflow
 
@@ -70,10 +70,10 @@ Acceptance: launch without credentials; show 720 unique inquiries after removing
 
 ### 1. Requirements and source mapping — 2–3 hours
 
-1. Walk through the fictional owner's Monday routine: review last week, assign unanswered leads, inspect failed bookings, assess lead sources.
+1. Walk through the owner's Monday routine: review last week, assign unanswered leads, inspect failed bookings, assess lead sources.
 2. Create a one-page requirements note listing decisions, users, inputs, expected outputs, and acceptance criteria.
-3. Identify which source fields a real business would export and produce a column mapping worksheet.
-4. Decide whether future real users want business-hour response time or elapsed hours, and which timezone they report in.
+3. Identify which source fields a typical business exports and produce a column mapping worksheet.
+4. Decide whether each business wants business-hour response time or elapsed hours, and which timezone they report in.
 5. Confirm whether cancellations belong to the inquiry cohort or appointment period before adding another reporting view.
 
 Acceptance: someone without coding knowledge can explain each KPI, its denominator, and what action it supports. All assumptions are recorded, not buried in code.
@@ -113,21 +113,21 @@ The initial brief is deterministic Markdown: prior/full-week inquiry counts, coh
 
 Acceptance: every statement can be traced to a visible table or metric; sparse data produces cautious language; no AI or fabricated causal interpretation is needed.
 
-### 5. Portfolio packaging and usability review — 3–5 hours
+### 5. Packaging and usability review — 3–5 hours
 
 1. Ask a friend or stakeholder to perform three tasks: find an unanswered inquiry, identify a source with completed jobs, and explain cancellation rate.
-2. Record observations, task completion, misunderstandings, and revisions. Feedback is actual evidence; synthetic outcomes are not.
+2. Record observations, task completion, misunderstandings, and revisions. Feedback drives the revisions.
 3. Add screenshots, a 90-second demo recording, architecture diagram, and a short case study describing the problem and choices.
-4. Complete the final frontend and showcase phase below, verify repository contents and history, then make it public as authorized on September 23, 2026.
+4. Complete the final frontend and showcase phase below, verify repository contents and history, then make the repository public.
 5. Optionally deploy a **demo-only** app. Disable user uploads on a public deployment until hosting privacy, retention, and access controls are designed. Hosting is not part of this initial setup.
 
-Acceptance: another person can clone and launch using the README; the case study labels all demo data; the presenter can explain at least three implementation tradeoffs without relying on code jargon.
+Acceptance: another person can clone and launch using the README; the case study labels the sample workspace; the presenter can explain at least three implementation tradeoffs without relying on code jargon.
 
-### 6. Optional real-business pilot — 1–2 weeks after a willing partner is found
+### 6. Business pilot — 1–2 weeks once a partner agrees
 
 Get explicit permission to use anonymized exports. Map their fields, agree metric definitions, record a baseline, train one user, collect structured feedback, and observe a short follow-up period. Store any real data in ignored `data/private/`, never Git. Reassess authentication and retention before shared hosting. Measure actual adoption, reconciliation errors, and time to prepare the weekly report; document sample size and observation period.
 
-Acceptance: the owner verifies totals against source records and reports a concrete decision the dashboard helped with. Only then consider evidence-based resume statements about business impact.
+Acceptance: the owner verifies totals against source records and reports a concrete decision the dashboard helped with. Only then report measured impact.
 
 ## Final phase: distinctive frontend and public showcase — delivered
 
@@ -166,7 +166,7 @@ src/leadflow/analytics.py    SQL integration, metrics, summaries, exports
 sql/cohort.sql               Auditable inquiry-level aggregation
 app.py                       Classic Streamlit view
 scripts/                     Demo generator, benchmark, JSON export, screenshot capture
-data/demo/                   Committed synthetic CSVs and provenance
+data/demo/                   Committed sample workspace CSVs and provenance
 data/invalid/                Deliberately broken demonstration input
 tests/                       Calculation, validation, API, and UI tests
 docs/                        Plan, contracts, metrics, design, demo guide, assets

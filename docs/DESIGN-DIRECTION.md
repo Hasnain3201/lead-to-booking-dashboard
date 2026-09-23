@@ -41,7 +41,7 @@ Research took place September 23, 2026. Sources were read for their published ap
 - Motion never implies data that does not exist. Ring sweeps and bar growth only reveal final values.
 - `prefers-reduced-motion` pauses the particle current as a still frame and turns off decorative motion and the theme reveal.
 - Every pointer interaction has a keyboard path: source nodes are buttons, date handles are sliders, rows open with Enter, and the drawer and palette close with Escape.
-- Every screen has a legible synthetic-data label, and caveats stay next to the numbers they qualify.
+- Sample data is always labeled as the sample workspace, and caveats stay next to the numbers they qualify.
 
 ## Architecture decision
 

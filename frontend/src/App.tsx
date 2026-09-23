@@ -182,7 +182,7 @@ export default function App() {
         label: 'Reset all filters',
         run: () => meta && setFilters(defaults(meta)),
       },
-      { id: 'demo', group: 'Actions', label: 'Return to the synthetic demo', run: returnToDemo },
+      { id: 'demo', group: 'Actions', label: 'Open the sample workspace', run: returnToDemo },
       {
         id: 'dl-brief',
         group: 'Downloads',
@@ -228,9 +228,9 @@ export default function App() {
           </a>
           <div className="topbar-meta">
             {meta && (
-              <span className={`badge ${meta.synthetic ? '' : 'live'}`}>
+              <span className={`badge ${meta.sample ? '' : 'live'}`}>
                 <span className="dot" />
-                {meta.synthetic ? 'Synthetic demo' : 'Uploaded · in memory'}
+                {meta.sample ? 'Sample workspace' : 'Your files · in memory'}
               </span>
             )}
             {meta && <span className="badge hide-sm">Outcomes through {formatDateTime(meta.snapshot)}</span>}
@@ -259,7 +259,7 @@ export default function App() {
               <h3>Something interrupted the connection</h3>
               <p>{error}</p>
               <button className="btn primary" type="button" onClick={returnToDemo}>
-                Return to the synthetic demo
+                Open the sample workspace
               </button>
             </div>
           </section>
@@ -402,7 +402,7 @@ export default function App() {
                   }
                   lede="A one-page summary of the last full week for the Monday check-in, with one rule-based next step."
                 />
-                <Dispatch brief={view.brief} synthetic={meta.synthetic} url={url('weekly-brief.md')} />
+                <Dispatch brief={view.brief} sample={meta.sample} url={url('weekly-brief.md')} />
               </div>
             </section>
 
@@ -443,14 +443,13 @@ export default function App() {
         <div className="shell">
           <div className="footer-grid">
             <div>
-              <h5 className="label">About this project</h5>
+              <h5 className="label">About Leadflow</h5>
               <p>
-                Leadflow is a portfolio project by Hasnain Shahzad. Harbor Home Services is fictional and every
-                included record is synthetic; no real business outcomes are claimed.
+                Lead-to-booking analytics for home-service businesses. Bring three everyday exports and see which
+                leads are waiting, where bookings fall through, and which sources turn into finished work.
               </p>
               <p>
-                Python and DuckDB SQL compute every number. This interface only displays what the local service
-                returns.
+                Python and DuckDB SQL compute every number. Files stay on your computer. Built by Hasnain Shahzad.
               </p>
             </div>
             <div>
@@ -463,7 +462,7 @@ export default function App() {
               </dl>
             </div>
             <div>
-              <h5 className="label">What is not claimed</h5>
+              <h5 className="label">What the numbers don’t say</h5>
               <dl>
                 <dt>No empty-slot inference</dt>
                 <dd>A cancellation is not proof an appointment went unfilled.</dd>

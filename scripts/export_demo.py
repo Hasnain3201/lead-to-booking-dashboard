@@ -1,4 +1,4 @@
-"""Export validated synthetic data for a frontend prototype; no separate metric definitions."""
+"""Export the validated sample workspace as JSON; no separate metric definitions."""
 
 import argparse
 import json
@@ -29,7 +29,7 @@ def build_demo():
     cohort = cohort_table(bundle, ROOT / "sql/cohort.sql")
     return {
         "schema_version": 1,
-        "synthetic": True,
+        "sample": True,
         "business": manifest["business"],
         "snapshot": bundle.snapshot.isoformat(),
         "reporting_timezone": "UTC",
@@ -40,7 +40,7 @@ def build_demo():
         "bookings": records(booking_details(bundle, cohort)),
         "attention": records(attention_queue(cohort, bundle.snapshot)),
         "import_receipt": records(bundle.audit),
-        "weekly_brief": weekly_summary(cohort, bundle.snapshot, synthetic=True),
+        "weekly_brief": weekly_summary(cohort, bundle.snapshot, sample=True),
     }
 
 
@@ -51,7 +51,7 @@ def main():
     payload = build_demo()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, allow_nan=False) + "\n")
-    print(f"Exported {len(payload['inquiries'])} synthetic inquiries to {args.output}")
+    print(f"Exported {len(payload['inquiries'])} sample inquiries to {args.output}")
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ function render(markdown: string) {
           <b>Suggested action.</b> {line.slice('Suggested action:'.length).trim()}
         </p>,
       )
-    else if (line.startsWith('SYNTHETIC') || line.startsWith('Uploaded')) continue
+    else if (line.startsWith('Sample workspace') || line.startsWith('Uploaded')) continue
     else if (line.startsWith('Recent cohorts'))
       blocks.push(
         <p key={blocks.length} className="muted">
@@ -45,7 +45,7 @@ function render(markdown: string) {
   return blocks
 }
 
-export function Dispatch({ brief, synthetic, url }: { brief: string; synthetic: boolean; url: string }) {
+export function Dispatch({ brief, sample, url }: { brief: string; sample: boolean; url: string }) {
   return (
     <div className="dispatch-wrap">
       <motion.article
@@ -55,7 +55,7 @@ export function Dispatch({ brief, synthetic, url }: { brief: string; synthetic: 
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="stamp">{synthetic ? 'SYNTHETIC DEMO' : 'UPLOADED DATA'}</div>
+        <div className="stamp">{sample ? 'SAMPLE WORKSPACE' : 'YOUR DATA'}</div>
         {render(brief)}
       </motion.article>
       <div>

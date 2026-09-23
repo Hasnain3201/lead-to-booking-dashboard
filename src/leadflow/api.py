@@ -62,7 +62,7 @@ class InMemoryParser(MultiPartParser):
 class Dataset:
     id: str
     label: str
-    synthetic: bool
+    sample: bool
     bundle: Bundle
     cohort: pd.DataFrame
 
@@ -71,9 +71,9 @@ def records(frame):
     return json.loads(frame.to_json(orient="records", date_format="iso"))
 
 
-def build_dataset(dataset_id, label, synthetic, inputs, snapshot):
+def build_dataset(dataset_id, label, sample, inputs, snapshot):
     bundle = load_bundle(inputs, snapshot)
-    return Dataset(dataset_id, label, synthetic, bundle, cohort_table(bundle, SQL))
+    return Dataset(dataset_id, label, sample, bundle, cohort_table(bundle, SQL))
 
 
 def demo_dataset():
@@ -139,7 +139,7 @@ def meta(request):
         {
             "id": dataset.id,
             "label": dataset.label,
-            "synthetic": dataset.synthetic,
+            "sample": dataset.sample,
             "snapshot": bundle.snapshot.isoformat(),
             "reporting_timezone": "UTC",
             "sources": sorted(full.source.unique()),
@@ -173,7 +173,7 @@ def view(request):
             "timeline": records(daily_trend(context)),
             "attention": records(queue),
             "failed_bookings": records(failed),
-            "brief": weekly_summary(context, snapshot, synthetic=dataset.synthetic),
+            "brief": weekly_summary(context, snapshot, sample=dataset.sample),
         }
     )
 
@@ -195,7 +195,7 @@ def export(request):
     selected, context, _, _ = filters(request, dataset)
     snapshot = dataset.bundle.snapshot
     if kind == "weekly-brief.md":
-        body = weekly_summary(context, snapshot, synthetic=dataset.synthetic).encode()
+        body = weekly_summary(context, snapshot, sample=dataset.sample).encode()
         media = "text/markdown; charset=utf-8"
     else:
         tables = {

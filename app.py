@@ -39,13 +39,13 @@ st.set_page_config(page_title="Leadflow | Lead-to-booking", page_icon="↗", lay
 st.title("Leadflow")
 st.caption("FROM FIRST INQUIRY TO FINISHED JOB")
 st.sidebar.title("Workspace")
-mode = st.sidebar.radio("Data source", ["Synthetic demo", "Upload CSVs"])
-synthetic = mode == "Synthetic demo"
-if synthetic:
+mode = st.sidebar.radio("Data source", ["Sample workspace", "Upload CSVs"])
+sample = mode == "Sample workspace"
+if sample:
     manifest = json.loads((ROOT / "data/demo/manifest.json").read_text())
     snapshot = pd.Timestamp(manifest["snapshot"])
     inputs = demo_inputs(ROOT)
-    st.info("Harbor Home Services · Fictional business · All records and results are synthetic.")
+    st.info("Sample workspace · Home services. Upload your own CSVs from the sidebar.")
 else:
     st.info(
         "Upload three matching CSVs. Files are processed in memory and are not saved by this app."
@@ -288,6 +288,6 @@ with brief:
         "so the two comparison weeks stay complete."
     )
     weekly_data = full.loc[full.source.isin(sources) & full.service.isin(services)]
-    summary = weekly_summary(weekly_data, snapshot, synthetic=synthetic)
+    summary = weekly_summary(weekly_data, snapshot, sample=sample)
     st.markdown(summary)
     st.download_button("Download weekly brief", summary, "weekly-brief.md", mime="text/markdown")

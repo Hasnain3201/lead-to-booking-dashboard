@@ -37,7 +37,7 @@ Trim surrounding whitespace; normalize category case and spaces; map `Google` to
 
 Limits: 5 MB per file in both interfaces, and 100,000 rows per table. These are guardrails, not a performance benchmark. Uploads are processed in memory, without database persistence or application-level saving. Temporary Python objects live for the session; no claim of secure erasure is made. CSV downloads neutralize formula-like text cells.
 
-Demo provenance: deterministic Python random seed 42; 720 inquiries over June 29–September 20, 2026, with outcomes through September 21, 2026 00:00 UTC. Patterns are deliberately constructed, not representative market findings. Three duplicate inquiries and occasional source aliases/whitespace demonstrate cleanup. `data/invalid/bookings_orphan.csv` is a complete alternate bookings file with one deliberate orphan, for demonstrating rejection alongside the two regular demo files.
+Sample workspace provenance: generated with deterministic Python random seed 42; 720 inquiries over June 29–September 20, 2026, with outcomes through September 21, 2026 00:00 UTC. Three duplicate inquiries and occasional source aliases/whitespace demonstrate cleanup. `data/invalid/bookings_orphan.csv` is a complete alternate bookings file with one deliberate orphan, for demonstrating rejection alongside the two regular sample files.
 
 
 ## Structured repair report

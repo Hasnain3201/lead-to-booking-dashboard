@@ -1,4 +1,4 @@
-# Synthetic pipeline benchmark
+# Pipeline benchmark
 
 Measured September 23, 2026, using `scripts/benchmark.py`. Each independent process creates three in-memory CSVs, validates them, runs the inquiry-cohort SQL, and reconciles counts plus integer-cent revenue. Input generation is outside the timed region. No production data or network services are used.
 

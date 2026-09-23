@@ -1,10 +1,8 @@
 # Owner workflow and requirements
 
-This is a fictional-business requirements baseline, not a record of interviews or client approval.
-
 ## User and decisions
 
-The primary user is the owner or operations coordinator of Harbor Home Services. Every Monday they export three matching files, review the import receipt, check last week’s activity, assign unanswered inquiries for follow-up, inspect cancelled/no-show appointments, and compare sources by completed work. They download the brief for their weekly review.
+The primary user is the owner or operations coordinator of a home-service business. Every Monday they export three matching files, review the import receipt, check last week’s activity, assign unanswered inquiries for follow-up, inspect cancelled/no-show appointments, and compare sources by completed work. They download the brief for their weekly review.
 
 | Decision | Evidence | Acceptance criterion |
 |---|---|---|
@@ -14,19 +12,19 @@ The primary user is the owner or operations coordinator of Harbor Home Services.
 | Which sources produced work? | Inquiry counts, conversions, jobs, and recorded revenue | Source totals reconcile to overall metrics; sample sizes visible |
 | What should we review this week? | Last complete-week brief and explicit next action | All numbers trace to the supplied snapshot; no causal claims |
 
-## Decisions fixed for the demo
+## Product decisions for version 1
 
 - Response time uses elapsed hours, including nights and weekends. Business-hour calendars require a later owner decision.
 - Reporting uses UTC. Input timestamps must contain an explicit timezone offset.
 - Cancellation reporting follows inquiry cohorts, not appointment-date periods. Current status is observed at the supplied snapshot.
 - A cancelled inquiry that booked once still counts as converted. No-shows are a separate booking outcome.
 - The dashboard is read-only: assignment, customer contact, and source corrections happen outside it.
-- The 24-hour follow-up threshold is a demo assumption, not a negotiated service-level agreement.
-- No names or contact information are needed for the analytical demo.
+- The 24-hour follow-up threshold is a default that each business can revisit, not a negotiated service-level agreement.
+- No names or contact information are needed for the analysis.
 
-## Open pilot questions
+## Questions to confirm with each business
 
-Confirm the owner’s reporting timezone, working hours, follow-up target, definition of a new inquiry versus repeat customer, cancellation handling, source categories, and interpretation of job value. Determine who owns each export and how they confirm all three reflect the same snapshot. Record actual answers only when a real stakeholder participates.
+Confirm the owner’s reporting timezone, working hours, follow-up target, definition of a new inquiry versus repeat customer, cancellation handling, source categories, and interpretation of job value. Determine who owns each export and how they confirm all three reflect the same snapshot. Record each business's answers during setup.
 
 ## Acceptance walkthrough
 

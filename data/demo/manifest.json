@@ -1,10 +1,9 @@
 {
-  "business": "Harbor Home Services (fictional)",
-  "synthetic": true,
+  "business": "Sample workspace",
+  "sample": true,
   "seed": 42,
   "snapshot": "2026-09-21T00:00:00+00:00",
   "inquiries": 720,
   "bookings": 345,
-  "jobs": 261,
-  "patterns": "Referral conversion and response speed are deliberately stronger."
+  "jobs": 261
 }

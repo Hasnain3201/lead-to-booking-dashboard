@@ -148,7 +148,7 @@ def test_weekly_summary_and_export_safety():
     brief = weekly_summary(cohort, bundle.snapshot)
     assert "2026-09-14 to 2026-09-20" in brief
     assert "Inquiries: 4 (+4" in brief
-    assert "SYNTHETIC DEMO" in brief
+    assert "Sample workspace." in brief
     assert "Review the unanswered Social inquiries first" in brief
     assert "'=SUM" in safe_csv(pd.DataFrame({"id": ["=SUM(1)"]})).decode()
 
@@ -329,7 +329,7 @@ def test_frontend_demo_export_uses_authoritative_metrics():
     namespace = runpy.run_path(str(ROOT / "scripts/export_demo.py"))
     payload = namespace["build_demo"]()
     decoded = json.loads(json.dumps(payload, allow_nan=False))
-    assert decoded["synthetic"] is True
+    assert decoded["sample"] is True
     assert decoded["schema_version"] == 1
     assert len(decoded["inquiries"]) == decoded["summary"]["inquiries"] == 720
     assert len(decoded["bookings"]) == decoded["summary"]["bookings"] == 345
@@ -338,7 +338,7 @@ def test_frontend_demo_export_uses_authoritative_metrics():
         sum(row["revenue_cents"] for row in decoded["inquiries"]) / 100
         == decoded["summary"]["revenue_usd"]
     )
-    assert "SYNTHETIC DEMO" in decoded["weekly_brief"]
+    assert "Sample workspace." in decoded["weekly_brief"]
 
 
 def test_outcomes_flow_and_daily_trend_use_inquiry_grain():

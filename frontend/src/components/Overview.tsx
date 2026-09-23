@@ -66,7 +66,7 @@ export function Hero({ meta, metrics, onPalette }: { meta: Meta; metrics: Metric
             Leadflow joins three spreadsheets, <strong>inquiries, bookings, and completed jobs</strong>, so a service
             business owner can see which leads are slipping, where bookings fall through, and which sources turn into
             real work.{' '}
-            {meta.synthetic && <strong>Every record here is synthetic.</strong>}
+            {meta.sample ? 'Explore the sample workspace, or bring your own files.' : 'Showing your uploaded files.'}
           </motion.p>
           <motion.div
             className="hero-actions"

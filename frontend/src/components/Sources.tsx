@@ -134,7 +134,7 @@ export function Sources({
         </div>
       )}
       <p className="caveat">
-        Compare sample sizes alongside rates: small sources swing widely. Differences describe this synthetic
+        Compare sample sizes alongside rates: small sources swing widely. Differences describe this
         snapshot and do not establish marketing effectiveness. Job value is not profit, cash collected, or ROI, and
         no advertising costs are included.
       </p>

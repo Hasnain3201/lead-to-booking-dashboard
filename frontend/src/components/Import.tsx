@@ -51,8 +51,8 @@ export function Import({
     setFiles(loaded)
     setNote(
       broken
-        ? 'Loaded the demo files with a deliberately broken bookings file. Import it to see validation stop the run.'
-        : 'Loaded the synthetic demo files. Import them to run the full validation path.',
+        ? 'Loaded the sample files with a broken bookings export. Import it to see validation stop the run.'
+        : 'Loaded the sample workspace files. Import them to run the full validation path.',
     )
   }
 
@@ -121,7 +121,7 @@ export function Import({
       </div>
       <div className="import-actions" style={{ marginTop: 14 }}>
         <button className="btn small ghost" type="button" disabled={!enabled} onClick={() => loadSamples(false)}>
-          Load demo files
+          Load sample files
         </button>
         <button className="btn small ghost" type="button" disabled={!enabled} onClick={() => loadSamples(true)}>
           <Icon name="alert" size={14} />
@@ -258,7 +258,7 @@ export function ImportFailed({ failure, onDemo }: { failure: ImportFailure; onDe
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button className="btn primary" type="button" onClick={onDemo}>
               <Icon name="reset" />
-              Return to the synthetic demo
+              Open the sample workspace
             </button>
             <button
               className="btn"

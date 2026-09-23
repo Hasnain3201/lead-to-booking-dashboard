@@ -6,11 +6,11 @@ The React interface in `frontend/` never calculates business metrics. It calls a
 
 | Method and path | Returns |
 |---|---|
-| `GET /api/datasets/{id}` | Business label, synthetic flag, snapshot, available sources and services, first/last inquiry dates, inquiry count, import receipt, and whether uploads are enabled |
+| `GET /api/datasets/{id}` | Workspace label, sample flag, snapshot, available sources and services, first/last inquiry dates, inquiry count, import receipt, and whether uploads are enabled |
 | `GET /api/datasets/{id}/view` | Everything for one filtered view: `metrics`, `sources`, `flow`, `inquiries`, `timeline`, `attention`, `failed_bookings`, and `brief` |
 | `GET /api/datasets/{id}/inquiries/{inquiry_id}` | One inquiry with its furthest outcome, and every booking and completed job it has |
 | `GET /api/datasets/{id}/exports/{kind}` | `follow-up.csv`, `booking-outcomes.csv`, `source-metrics.csv`, `inquiries.csv`, `import-receipt.csv`, or `weekly-brief.md`, using the same filters as the view |
-| `GET /api/samples/{name}` | The committed synthetic CSVs, plus `bookings_orphan.csv` for demonstrating a failed import |
+| `GET /api/samples/{name}` | The committed sample CSVs, plus `bookings_orphan.csv` for demonstrating a failed import |
 | `POST /api/datasets` | Multipart `inquiries`, `bookings`, `jobs` files and a `snapshot` date. Returns `201 {id}` or `422 {issue_count, issues}` |
 
 The dataset `demo` is always available. Uploaded datasets receive random IDs, live in memory only, and are evicted after the four most recent uploads.
@@ -34,7 +34,7 @@ Uploads require `Content-Length`, are limited to 5 MB per file (matching the CSV
 
 ## Static export
 
-`scripts/export_demo.py --output exports/demo-dashboard.json` still produces a single validated JSON snapshot of the synthetic demo for offline experiments. It is not used by the interface.
+`scripts/export_demo.py --output exports/demo-dashboard.json` still produces a single validated JSON snapshot of the sample workspace for offline experiments. It is not used by the interface.
 
 ## Verification
 

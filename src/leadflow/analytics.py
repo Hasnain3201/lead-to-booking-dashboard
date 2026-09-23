@@ -117,7 +117,7 @@ def attention_queue(df, snapshot):
     )
 
 
-def weekly_summary(df, snapshot, synthetic=True):
+def weekly_summary(df, snapshot, sample=True):
     # Last FULL Monday–Sunday week in UTC, excluding the snapshot's current week.
     end = snapshot.normalize() - pd.Timedelta(days=snapshot.weekday())
     start = end - pd.Timedelta(days=7)
@@ -132,7 +132,7 @@ def weekly_summary(df, snapshot, synthetic=True):
     lines = [
         "# Weekly operations brief",
         "",
-        "SYNTHETIC DEMO — no real business results." if synthetic else "Uploaded dataset.",
+        "Sample workspace." if sample else "Uploaded dataset.",
         f"Inquiry cohort: {start.date()} to {(end - pd.Timedelta(days=1)).date()} (UTC).",
         f"Outcomes observed through {snapshot.isoformat()}.",
         "",

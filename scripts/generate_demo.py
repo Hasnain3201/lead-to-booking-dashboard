@@ -1,4 +1,4 @@
-"""Rebuild fictional Harbor Home Services data. No personal information is generated."""
+"""Rebuild the sample workspace data. No personal information is generated."""
 
 import csv
 import json
@@ -82,14 +82,13 @@ def generate():
     (target / "manifest.json").write_text(
         json.dumps(
             {
-                "business": "Harbor Home Services (fictional)",
-                "synthetic": True,
+                "business": "Sample workspace",
+                "sample": True,
                 "seed": 42,
                 "snapshot": SNAPSHOT.isoformat(),
                 "inquiries": 720,
                 "bookings": len(bookings),
                 "jobs": len(jobs),
-                "patterns": "Referral conversion and response speed are deliberately stronger.",
             },
             indent=2,
         )

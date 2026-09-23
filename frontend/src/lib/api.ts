@@ -79,7 +79,7 @@ export interface ReceiptRow {
 export interface Meta {
   id: string
   label: string
-  synthetic: boolean
+  sample: boolean
   snapshot: string
   reporting_timezone: string
   sources: string[]

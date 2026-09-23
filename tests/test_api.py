@@ -24,7 +24,7 @@ def demo_files(bookings=DEMO / "bookings.csv"):
 
 def test_demo_meta_and_view_reconcile_with_known_totals(client):
     meta = client.get("/api/datasets/demo").json()
-    assert meta["synthetic"] is True
+    assert meta["sample"] is True
     assert meta["inquiries"] == 720
     assert meta["first_date"] <= meta["last_date"]
     view = client.get("/api/datasets/demo/view").json()
@@ -46,7 +46,7 @@ def test_demo_meta_and_view_reconcile_with_known_totals(client):
     assert booked == summary["converted"]
     completed = sum(p["inquiries"] for p in view["flow"] if p["outcome"] == "completed")
     assert completed <= summary["completed_jobs"]
-    assert "SYNTHETIC DEMO" in view["brief"]
+    assert "Sample workspace." in view["brief"]
 
 
 def test_filters_narrow_cohort_but_timeline_keeps_full_date_context(client):
@@ -94,14 +94,14 @@ def test_exports_match_view_and_neutralize_formulas(client):
     assert client.get("/api/datasets/demo/exports/secrets.csv").status_code == 404
 
 
-def test_valid_upload_creates_a_non_synthetic_dataset(client):
+def test_valid_upload_creates_a_non_sample_dataset(client):
     response = client.post("/api/datasets", files=demo_files(), data={"snapshot": "2026-09-23"})
     assert response.status_code == 201
     dataset = response.json()["id"]
     meta = client.get(f"/api/datasets/{dataset}").json()
-    assert meta["synthetic"] is False and meta["inquiries"] == 720
+    assert meta["sample"] is False and meta["inquiries"] == 720
     brief = client.get(f"/api/datasets/{dataset}/view").json()["brief"]
-    assert "SYNTHETIC" not in brief
+    assert "Uploaded dataset." in brief and "Sample workspace" not in brief
 
 
 def test_invalid_upload_returns_issue_report_and_no_dataset(client):
