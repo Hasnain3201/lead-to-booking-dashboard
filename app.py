@@ -1,6 +1,7 @@
 """Run with: python -m streamlit run app.py"""
 
 import json
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -8,7 +9,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from leadflow.analytics import (
+# Run directly from a checkout even when a host skips editable-install .pth files.
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "src"))
+
+from leadflow.analytics import (  # noqa: E402
     attention_queue,
     cohort_table,
     metrics,
@@ -17,9 +22,8 @@ from leadflow.analytics import (
     source_metrics,
     weekly_summary,
 )
-from leadflow.data import SCHEMAS, DataQualityError, demo_inputs, load_bundle
+from leadflow.data import SCHEMAS, DataQualityError, demo_inputs, load_bundle  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title="Leadflow | Lead-to-booking", page_icon="↗", layout="wide")
 st.title("Leadflow")
 st.caption("FROM FIRST INQUIRY TO FINISHED JOB")
