@@ -61,6 +61,8 @@ Regeneration uses seed 42 and the fixed snapshot `2026-09-21T00:00:00Z`; it over
 - [Metric definitions](docs/METRICS.md): formulas, denominators, attribution, caveats.
 - [CSV contract](docs/DATA-CONTRACT.md): exact inputs and import behavior.
 - [Demo walkthrough](docs/DEMO-GUIDE.md): a short presentation and acceptance checklist.
+- [Design direction](docs/DESIGN-DIRECTION.md) and [frontend prototype data](docs/FRONTEND-DATA.md).
+- [Synthetic performance measurements](docs/PERFORMANCE.md).
 - [Development handoff](docs/HANDOFF.md): current state, checks, next actions, usage cutoff.
 
 No private uploads are saved by the application. Never commit real customer data. In-memory processing is not an access-control system; review privacy and hosting design before any real-data/shared deployment.

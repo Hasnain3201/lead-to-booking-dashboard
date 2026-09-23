@@ -315,3 +315,22 @@ def test_excess_csv_fields_do_not_become_a_hidden_index():
     with pytest.raises(DataQualityError) as caught:
         load_bundle(inputs, SNAPSHOT)
     assert caught.value.issues.code.tolist() == ["row_width"]
+
+
+def test_frontend_demo_export_uses_authoritative_metrics():
+    import json
+    import runpy
+
+    namespace = runpy.run_path(str(ROOT / "scripts/export_demo.py"))
+    payload = namespace["build_demo"]()
+    decoded = json.loads(json.dumps(payload, allow_nan=False))
+    assert decoded["synthetic"] is True
+    assert decoded["schema_version"] == 1
+    assert len(decoded["inquiries"]) == decoded["summary"]["inquiries"] == 720
+    assert len(decoded["bookings"]) == decoded["summary"]["bookings"] == 345
+    assert len(decoded["attention"]) == 73
+    assert (
+        sum(row["revenue_cents"] for row in decoded["inquiries"]) / 100
+        == decoded["summary"]["revenue_usd"]
+    )
+    assert "SYNTHETIC DEMO" in decoded["weekly_brief"]

@@ -25,6 +25,16 @@ from leadflow.analytics import (  # noqa: E402
 )
 from leadflow.data import SCHEMAS, DataQualityError, demo_inputs, load_bundle  # noqa: E402
 
+SOURCE_LABELS = {
+    "google_ads": "Google Ads",
+    "organic_search": "Organic search",
+    "referral": "Referrals",
+    "social": "Social",
+    "walk_in": "Walk-ins",
+    "unknown": "Unknown",
+}
+
+
 st.set_page_config(page_title="Leadflow | Lead-to-booking", page_icon="↗", layout="wide")
 st.title("Leadflow")
 st.caption("FROM FIRST INQUIRY TO FINISHED JOB")
@@ -76,10 +86,16 @@ dates = st.sidebar.date_input(
     "Inquiry date range (UTC)", value=(full.created_at.min().date(), full.created_at.max().date())
 )
 sources = st.sidebar.multiselect(
-    "Lead sources", sorted(full.source.unique()), default=sorted(full.source.unique())
+    "Lead sources",
+    sorted(full.source.unique()),
+    default=sorted(full.source.unique()),
+    format_func=lambda source: SOURCE_LABELS.get(source, source),
 )
 services = st.sidebar.multiselect(
-    "Services", sorted(full.service.unique()), default=sorted(full.service.unique())
+    "Services",
+    sorted(full.service.unique()),
+    default=sorted(full.service.unique()),
+    format_func=lambda service: service.capitalize(),
 )
 if len(dates) != 2:
     st.info("Select both a start and an end date.")
@@ -149,7 +165,7 @@ with overview:
                     y=["inquiries", "booked_leads"],
                     markers=True,
                     title="Weekly inquiry cohorts",
-                    labels={"created_at": "Week"},
+                    labels={"created_at": "Week", "value": "Inquiries", "variable": "Series"},
                 ),
                 width="stretch",
             )
@@ -161,9 +177,10 @@ with channels:
     st.subheader("Which sources lead to completed work?")
     source_table = source_metrics(selected)
     if not source_table.empty:
+        chart_sources = source_table.assign(source=source_table.source.map(SOURCE_LABELS))
         st.plotly_chart(
             px.bar(
-                source_table,
+                chart_sources,
                 x="source",
                 y="completed_jobs",
                 color="source",
@@ -171,7 +188,35 @@ with channels:
             ),
             width="stretch",
         )
-        st.dataframe(source_table, hide_index=True, width="stretch")
+        readable = chart_sources.copy()
+        for column in ["conversion", "response_coverage", "cancellation_rate"]:
+            readable[column] = readable[column].map(
+                lambda value: "N/A" if pd.isna(value) else f"{value:.1%}"
+            )
+        readable["response_hours"] = readable.response_hours.map(
+            lambda value: "N/A" if pd.isna(value) else f"{value:.1f} h"
+        )
+        readable["revenue_usd"] = readable.revenue_usd.map(lambda value: f"${value:,.2f}")
+        readable = readable.rename(
+            columns={
+                "source": "Lead source",
+                "inquiries": "Inquiries",
+                "converted": "Booked leads",
+                "conversion": "Conversion",
+                "response_hours": "Mean response",
+                "response_coverage": "Response coverage",
+                "bookings": "Bookings",
+                "cancellations": "Cancellations",
+                "cancellation_rate": "Cancellation rate",
+                "no_shows": "No-shows",
+                "completed_jobs": "Completed jobs",
+                "revenue_usd": "Recorded revenue",
+            }
+        )
+        st.dataframe(readable, hide_index=True, width="stretch")
+        st.caption(
+            "CSV exports retain numeric values and stable column names for further analysis."
+        )
         st.download_button("Download source metrics", safe_csv(source_table), "source-metrics.csv")
     else:
         st.info("No source metrics for this selection.")
