@@ -15,8 +15,6 @@ Lead-to-booking analytics for home-service businesses. It joins **inquiries, boo
 
 </div>
 
-The included sample workspace uses generated data; it does not represent a real client or measured business results.
-
 ## The problem, in plain English
 
 A small home-services company tracks its work in three spreadsheets: one for **inquiries** (someone asks for a quote), one for **bookings** (an appointment is made), and one for **completed jobs**. Because they live apart, the owner can't easily answer the Monday-morning questions:
