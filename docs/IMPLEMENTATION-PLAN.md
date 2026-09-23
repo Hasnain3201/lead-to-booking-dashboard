@@ -24,10 +24,10 @@ No login system, hosted database, LLM calls, predictive scoring, live CRM sync, 
 | Classic view | Streamlit + Plotly | The original analyst dashboard, kept as a simple alternative |
 | Cleanup | pandas | Parse typed columns and validate CSV contracts |
 | Metrics | DuckDB SQL, in memory | Transparent joins and aggregation without a database server |
-| Tests | pytest, Starlette TestClient, Streamlit AppTest | Hand-calculated fixtures, API reconciliation, edge cases, UI behavior |
+| Tests | pytest, Vitest, React Testing Library, Starlette TestClient, Streamlit AppTest | Hand-calculated fixtures, API reconciliation, edge cases, UI behavior |
 | Style checks | Ruff, oxlint, TypeScript | Consistent formatting and static checks for both languages |
 | Version control | Git + GitHub | Private during development; public after the final design and showcase phase |
-| CI | GitHub Actions | Python checks plus frontend lint and build on pushes and pull requests |
+| CI | GitHub Actions | Python checks plus frontend lint, component tests, and build on pushes and pull requests |
 
 The SQL first aggregates completed jobs per booking, then bookings per inquiry. Only then does the dashboard compute inquiry metrics. This prevents repeat bookings from double-counting leads or weighting response-time averages incorrectly.
 
@@ -60,6 +60,10 @@ flowchart LR
 
 Exact field contracts are in `DATA-CONTRACT.md`; formulas and caveats are in `METRICS.md`.
 
+## Release status
+
+The local v1 product is complete: strict CSV validation, exact-cent SQL aggregation, API, React interface, exports, regression checks, and a screenshot-led README. The original milestones below remain as the design roadmap; stakeholder usability research and a real-business pilot are future work, not claimed results.
+
 ## Milestones, deliverables, and acceptance criteria
 
 ### 0. Project setup and runnable foundation — delivered in this initial setup
@@ -86,7 +90,7 @@ The initial implementation already has strict contracts, normalization receipts,
 2. More fixture bundles for missing files/columns, malformed encoding, mixed offsets, zero records, all-cancelled records, no bookings, and all missing responses.
 3. Reconciliation checks that channel totals and filtered exports match the overview.
 4. An explicit source-mapping configuration if a real export uses different categories; keep unknown values visible.
-5. Decimal or integer-cent revenue arithmetic before financial reconciliation is a real requirement; current floating-point sums are display-only.
+5. Exact integer-cent arithmetic throughout validation and aggregation; dollar values are derived only for presentation (delivered).
 6. A measured 10,000- and 100,000-row load test; document hardware, elapsed time, and memory without making untested speed claims.
 
 Acceptance: no silent row loss, no join fan-out, exact hand-calculated counts, consistent denominators, and actionable errors. Failed uploads must never leave the prior dataset displayed as if the import succeeded.
@@ -137,9 +141,9 @@ Goal: a beautiful, unique, visually striking interface with playful effects, and
 
 - **Research and direction.** A reference board of current award-winning data sites, creative-coding tutorials, and design-system typography guidance is in `DESIGN-DIRECTION.md`, with notes on what each source contributed. The original identity, Harbor Observatory, pairs night-harbor colors with editorial Fraunces type, Geist interface text, and tabular mono numbers.
 - **Stack decision.** Streamlit could not support custom layouts and effects without fighting the framework. A dedicated React + TypeScript frontend now talks to a small local Starlette API that wraps the tested Python and SQL. The browser formats and draws; it never recalculates metrics. Streamlit remains as a classic view.
-- **Signature interactions.** A particle Sankey where each dot is one real inquiry; a brushable daily tide chart; a circular theme reveal; digit-swap numerals that never show made-up intermediate values; a printed import receipt; and a failure screen that clears every metric.
+- **Signature interactions.** A particle Sankey where each dot is one inquiry; a brushable daily tide chart; a circular theme reveal; digit-swap numerals that never show made-up intermediate values; a printed import receipt; and a failure screen that clears every metric.
 - **Full experience.** Overview, filter dock, source comparison with an exact table, follow-up queue, cancelled and no-show bookings, searchable records, inquiry drawer, weekly dispatch, uploads, validation errors, and empty and loading states, plus a ⌘K command palette.
-- **Accessibility and performance.** Reduced motion pauses the particle current and disables decorative motion. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard. The flow view held 60 fps in browser measurement.
+- **Accessibility and performance.** Reduced motion pauses the particle current and disables decorative motion. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard.
 - **Showcase.** The README uses real captures from `scripts/capture_screenshots.py` (headless Chrome), stored in `docs/assets/`, including an animated recording of the flow view.
 
 ### Acceptance

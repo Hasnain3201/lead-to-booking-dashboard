@@ -172,11 +172,11 @@ export function filterQuery(filters: Filters): string {
 }
 
 export const api = {
-  meta: (dataset: string) => request<Meta>(`/api/datasets/${dataset}`),
+  meta: (dataset: string, signal?: AbortSignal) => request<Meta>(`/api/datasets/${dataset}`, { signal }),
   view: (dataset: string, filters: Filters, signal?: AbortSignal) =>
     request<View>(`/api/datasets/${dataset}/view?${filterQuery(filters)}`, { signal }),
-  detail: (dataset: string, inquiry: string) =>
-    request<Detail>(`/api/datasets/${dataset}/inquiries/${encodeURIComponent(inquiry)}`),
+  detail: (dataset: string, inquiry: string, signal?: AbortSignal) =>
+    request<Detail>(`/api/datasets/${dataset}/inquiries/${encodeURIComponent(inquiry)}`, { signal }),
   exportUrl: (dataset: string, kind: string, filters: Filters) =>
     `/api/datasets/${dataset}/exports/${kind}?${filterQuery(filters)}`,
   sampleUrl: (name: string) => `/api/samples/${name}`,

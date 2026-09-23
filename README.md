@@ -15,19 +15,21 @@ Lead-to-booking analytics for home-service businesses. It joins **inquiries, boo
 
 </div>
 
+The included sample workspace uses generated data; it does not represent a real client or measured business results.
+
 ## The problem, in plain English
 
 A small home-services company tracks its work in three spreadsheets: one for **inquiries** (someone asks for a quote), one for **bookings** (an appointment is made), and one for **completed jobs**. Because they live apart, the owner can't easily answer the Monday-morning questions:
 
 - *Who asked for help and never heard back?*
 - *Where do bookings fall through?*
-- *Which lead sources actually turn into finished, paid work?*
+- *Which lead sources actually turn into completed work?*
 
 Leadflow checks the three files for problems, links every job back to the booking and inquiry it came from, and turns them into one trustworthy picture, with a follow-up list and a one-page weekly brief the owner can act on.
 
 ## See it move
 
-Every particle below is **one real inquiry record**. It flows from its lead source through first response and booking to the furthest outcome it reached. Leads that never book drift away at the booking stage. Hover a particle to identify it, or click it to open the full record.
+Every particle below is **one inquiry record**. It flows from its lead source through first response and booking to the furthest outcome it reached. Leads that never book drift away at the booking stage. Hover a particle to identify it, or click it to open the full record.
 
 <img src="docs/assets/current.webp" alt="Animated Sankey flow where hundreds of colored particles travel from lead sources, through first response and booking, to completed jobs, scheduled appointments, or cancellations. Never-booked particles scatter off at the booking column." width="100%">
 
@@ -60,7 +62,7 @@ Every particle below is **one real inquiry record**. It flows from its lead sour
 
 - **Numbers never lie in motion.** When filters change, digits slide from the old value to the new one. They never count up through values that don't exist.
 - **A soft pastel aurora, fine film grain, and a slow light sweep** give the porcelain surfaces depth, and every panel has a cursor-following spotlight.
-- **Accessible by default.** Reduced-motion settings pause the particle flow and turn off decorative effects. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard. Hidden data tables describe the flow chart for screen readers.
+- **Keyboard and reduced-motion support.** Reduced-motion settings pause the particle flow and turn off decorative effects. Source nodes, date handles, rows, the drawer, and the palette all work from the keyboard. Hidden data tables describe the flow chart for screen readers.
 - **Offline-friendly.** Fonts are bundled, and no account, API key, or internet connection is needed after installation.
 
 ## Quick start
@@ -132,7 +134,7 @@ flowchart LR
 - **One row per inquiry, always.** The SQL first totals jobs per booking, then bookings per inquiry, and only then calculates rates. A lead with three bookings still counts once toward conversion and response time. See [`sql/cohort.sql`](sql/cohort.sql).
 - **Python is the single source of truth.** The interface formats and draws what the API returns and never recalculates a metric. Tests reconcile the API against the same functions.
 - **Strict, explainable validation.** Conflicting IDs, orphan records, impossible timelines, unknown categories, and fractional cents block the whole import, with the file, row, and column of each problem.
-- **Uploads stay in memory.** Files are parsed without touching disk, limited to 5 MB each, and discarded when the server stops.
+- **Uploads stay in memory.** Files are parsed without touching disk, limited to 5 MB each, and discarded when the server stops. Only the four most recently used uploaded workspaces are retained.
 
 ## What the numbers mean
 
@@ -151,8 +153,9 @@ Date filters select *when inquiries arrived*; their outcomes count through the d
 ```sh
 source .venv/bin/activate
 ruff check . && ruff format --check .
-pytest -q                               # 57 tests: metrics, validation, API, and Streamlit
+pytest -q                               # Metrics, validation, API, and Streamlit regressions
 npm --prefix frontend run lint
+npm --prefix frontend test              # React recovery, request races, and keyboard interactions
 npm --prefix frontend run build         # TypeScript type check and production build
 ```
 

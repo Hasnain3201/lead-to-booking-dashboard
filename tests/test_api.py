@@ -143,3 +143,67 @@ def test_unknown_dataset_and_samples(client):
     assert client.get("/api/datasets/abc/view").status_code == 404
     assert client.get("/api/samples/inquiries.csv").status_code == 200
     assert client.get("/api/samples/..%2Fpyproject.toml").status_code == 404
+
+
+@pytest.mark.parametrize(
+    "value", ["NaT", "", "20260901", "2026-09-01T12:00:00Z", "2026-02-30", "9999-12-31"]
+)
+def test_date_filters_reject_non_calendar_dates(client, value):
+    for endpoint in ["view", "exports/inquiries.csv"]:
+        assert (
+            client.get(f"/api/datasets/demo/{endpoint}", params={"start": value}).status_code == 400
+        )
+
+
+def test_header_only_upload_has_an_empty_view_and_export(client):
+    files = {
+        name: (filename, content.splitlines()[0] + b"\n", kind)
+        for name, (filename, content, kind) in demo_files().items()
+    }
+    response = client.post("/api/datasets", files=files, data={"snapshot": "2026-09-23"})
+    assert response.status_code == 201
+    dataset = response.json()["id"]
+    meta = client.get(f"/api/datasets/{dataset}").json()
+    assert meta["inquiries"] == 0 and meta["first_date"] is None
+    view = client.get(f"/api/datasets/{dataset}/view").json()
+    assert view["metrics"]["inquiries"] == 0
+    assert view["metrics"]["conversion"] is None
+    assert client.get(f"/api/datasets/{dataset}/exports/inquiries.csv").status_code == 200
+
+
+def test_oversized_file_never_spills_to_disk(client, monkeypatch):
+    import tempfile
+
+    def unexpected_rollover(self):
+        pytest.fail("Upload spilled to disk before rejection")
+
+    monkeypatch.setattr(tempfile.SpooledTemporaryFile, "rollover", unexpected_rollover)
+    files = demo_files()
+    files["jobs"] = ("jobs.csv", b"x" * (5 * 1024 * 1024 + 1), "text/csv")
+    response = client.post("/api/datasets", files=files, data={"snapshot": "2026-09-23"})
+    assert response.status_code == 413
+
+
+def test_actual_request_size_is_bounded_even_with_false_length(client):
+    response = client.post(
+        "/api/datasets",
+        content=b"x" * (16 * 1024 * 1024),
+        headers={"Content-Length": "1", "Content-Type": "multipart/form-data; boundary=test"},
+    )
+    assert response.status_code == 413
+
+
+def test_malformed_multipart_returns_a_client_error(client):
+    assert client.post("/api/datasets", content=b"x").status_code == 400
+    response = client.post(
+        "/api/datasets",
+        content=b"broken",
+        headers={"Content-Type": "multipart/form-data; boundary=test"},
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.parametrize("snapshot", ["", "NaT", "2026-09-23T12:00:00Z", "9999-12-31"])
+def test_upload_snapshot_requires_a_valid_calendar_date(client, snapshot):
+    response = client.post("/api/datasets", files=demo_files(), data={"snapshot": snapshot})
+    assert response.status_code == 400

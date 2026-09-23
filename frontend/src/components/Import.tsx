@@ -11,6 +11,7 @@ const todayUtc = () => new Date().toISOString().slice(0, 10)
 
 async function sampleFile(name: string, as: Name) {
   const response = await fetch(api.sampleUrl(name))
+  if (!response.ok) throw new Error(`Could not load ${name}. Please try again.`)
   return new File([await response.blob()], `${as}.csv`, { type: 'text/csv' })
 }
 
@@ -25,6 +26,7 @@ export function Import({
 }) {
   const [files, setFiles] = useState<Partial<Record<Name, File>>>({})
   const [snapshot, setSnapshot] = useState(todayUtc)
+  const [samplesLoading, setSamplesLoading] = useState(false)
   const [over, setOver] = useState(false)
   const [note, setNote] = useState<string | null>(null)
 
@@ -43,17 +45,24 @@ export function Import({
   const ready = NAMES.every((name) => files[name])
 
   const loadSamples = async (broken: boolean) => {
-    const loaded = {
-      inquiries: await sampleFile('inquiries.csv', 'inquiries'),
-      bookings: await sampleFile(broken ? 'bookings_orphan.csv' : 'bookings.csv', 'bookings'),
-      jobs: await sampleFile('jobs.csv', 'jobs'),
+    setSamplesLoading(true)
+    try {
+      const loaded = {
+        inquiries: await sampleFile('inquiries.csv', 'inquiries'),
+        bookings: await sampleFile(broken ? 'bookings_orphan.csv' : 'bookings.csv', 'bookings'),
+        jobs: await sampleFile('jobs.csv', 'jobs'),
+      }
+      setFiles(loaded)
+      setNote(
+        broken
+          ? 'Loaded the sample files with a broken bookings export. Import it to see validation stop the run.'
+          : 'Loaded the sample workspace files. Import them to run the full validation path.',
+      )
+    } catch (reason) {
+      setNote((reason as Error).message)
+    } finally {
+      setSamplesLoading(false)
     }
-    setFiles(loaded)
-    setNote(
-      broken
-        ? 'Loaded the sample files with a broken bookings export. Import it to see validation stop the run.'
-        : 'Loaded the sample workspace files. Import them to run the full validation path.',
-    )
   }
 
   return (
@@ -67,7 +76,7 @@ export function Import({
       onDrop={(event) => {
         event.preventDefault()
         setOver(false)
-        assign(event.dataTransfer.files)
+        if (enabled && !busy && !samplesLoading) assign(event.dataTransfer.files)
       }}
     >
       <div className="label">Bring your own files</div>
@@ -81,7 +90,17 @@ export function Import({
       )}
       <div className="slots">
         {NAMES.map((name) => (
-          <label key={name} className={`slot ${files[name] ? 'filled' : ''}`}>
+          <label
+            onDrop={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              setOver(false)
+              const file = event.dataTransfer.files[0]
+              if (file && enabled && !busy && !samplesLoading) setFiles((current) => ({ ...current, [name]: file }))
+            }}
+            key={name}
+            className={`slot ${files[name] ? 'filled' : ''}`}
+          >
             <span className="label">{name}.csv</span>
             <span className="file">{files[name]?.name ?? 'Choose or drop a file'}</span>
             {files[name] && (
@@ -92,7 +111,7 @@ export function Import({
             <input
               type="file"
               accept=".csv,text/csv"
-              disabled={!enabled}
+              disabled={!enabled || busy || samplesLoading}
               aria-label={`Choose ${name}.csv`}
               onChange={(event) => {
                 const file = event.target.files?.[0]
@@ -105,12 +124,17 @@ export function Import({
       <div className="import-actions">
         <label className="field">
           <span className="label">Snapshot date (UTC)</span>
-          <input type="date" value={snapshot} onChange={(event) => setSnapshot(event.target.value)} disabled={!enabled} />
+          <input
+            type="date"
+            value={snapshot}
+            onChange={(event) => setSnapshot(event.target.value)}
+            disabled={!enabled || busy || samplesLoading}
+          />
         </label>
         <button
           className="btn primary"
           type="button"
-          disabled={!enabled || !ready || busy || !snapshot}
+          disabled={!enabled || !ready || busy || samplesLoading || !snapshot}
           onClick={(event) =>
             onSubmit(files as Record<Name, File>, snapshot, event.currentTarget.getBoundingClientRect())
           }
@@ -120,10 +144,20 @@ export function Import({
         </button>
       </div>
       <div className="import-actions" style={{ marginTop: 14 }}>
-        <button className="btn small ghost" type="button" disabled={!enabled} onClick={() => loadSamples(false)}>
+        <button
+          className="btn small ghost"
+          type="button"
+          disabled={!enabled || busy || samplesLoading}
+          onClick={() => loadSamples(false)}
+        >
           Load sample files
         </button>
-        <button className="btn small ghost" type="button" disabled={!enabled} onClick={() => loadSamples(true)}>
+        <button
+          className="btn small ghost"
+          type="button"
+          disabled={!enabled || busy || samplesLoading}
+          onClick={() => loadSamples(true)}
+        >
           <Icon name="alert" size={14} />
           Load a broken sample
         </button>
@@ -151,7 +185,17 @@ const LINES: { key: keyof ReceiptRow; label: string }[] = [
   { key: 'category_values_normalized', label: 'Category values normalized' },
 ]
 
-export function Receipt({ rows, label, snapshot, receiptUrl }: { rows: ReceiptRow[]; label: string; snapshot: string; receiptUrl: string }) {
+export function Receipt({
+  rows,
+  label,
+  snapshot,
+  receiptUrl,
+}: {
+  rows: ReceiptRow[]
+  label: string
+  snapshot: string
+  receiptUrl: string
+}) {
   let line = 0
   const next = () => ({
     initial: { opacity: 0, y: -6 },
@@ -223,9 +267,9 @@ export function ImportFailed({ failure, onDemo }: { failure: ImportFailure; onDe
             {integer(failure.issue_count)} {failure.issue_count === 1 ? 'issue needs' : 'issues need'} <em>fixing</em>
           </h2>
           <p className="section-lede">
-            Nothing from these files was loaded. Correct the source export and upload the full bundle again.
-            {failure.issue_count > shown && ` Showing the first ${shown} issues.`} Row numbers count CSV records
-            with the header as row 1; quoted multi-line values may differ from text-editor lines.
+            No imported workspace is shown. Resolve the issue below and upload the full bundle again.
+            {failure.issue_count > shown && ` Showing the first ${shown} issues.`} Row numbers count CSV records with
+            the header as row 1; quoted multi-line values may differ from text-editor lines.
           </p>
           <div className="issue-list">
             {failure.issues.map((issue, i) => (
@@ -263,7 +307,9 @@ export function ImportFailed({ failure, onDemo }: { failure: ImportFailure; onDe
             <button
               className="btn"
               type="button"
-              onClick={() => download('import-issues.csv', csvFromRows(failure.issues as unknown as Record<string, unknown>[]))}
+              onClick={() =>
+                download('import-issues.csv', csvFromRows(failure.issues as unknown as Record<string, unknown>[]))
+              }
             >
               <Icon name="download" />
               Download issue report

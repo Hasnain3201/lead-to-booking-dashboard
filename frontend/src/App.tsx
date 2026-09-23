@@ -12,7 +12,8 @@ import { Records } from './components/Records'
 import { Sources } from './components/Sources'
 import { Tide } from './components/Tide'
 import { BrandMark, Icon, Reveal, SectionHead } from './components/ui'
-import { api, type Filters, type ImportFailure, type Meta, type View } from './lib/api'
+import { api, type Filters, type ImportFailure, type Meta } from './lib/api'
+import { useResource } from './lib/useResource'
 import { burst, revealTheme } from './lib/effects'
 import { formatDateTime } from './lib/format'
 
@@ -28,12 +29,9 @@ const defaults = (meta: Meta): Filters => ({
 export default function App() {
   const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme as Theme) ?? 'day')
   const [dataset, setDataset] = useState<string | null>('demo')
-  const [meta, setMeta] = useState<Meta | null>(null)
-  const [filters, setFilters] = useState<Filters | null>(null)
-  const [view, setView] = useState<View | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [revision, setRevision] = useState(0)
+  const [chosenFilters, setFilters] = useState<Filters | null>(null)
   const [failure, setFailure] = useState<ImportFailure | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [palette, setPalette] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -42,42 +40,32 @@ export default function App() {
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 200, damping: 30 })
 
-  useEffect(() => {
-    if (!dataset) return
-    let live = true
-    setMeta(null)
-    setView(null)
-    setFilters(null)
-    api
-      .meta(dataset)
-      .then((value) => {
-        if (!live) return
-        setMeta(value)
-        setFilters(value.first_date ? defaults(value) : null)
-      })
-      .catch((reason) => live && setError(reason.message))
-    return () => {
-      live = false
-    }
-  }, [dataset])
+  const loadMeta = useCallback((signal: AbortSignal) => api.meta(dataset!, signal), [dataset])
+  const metadata = useResource(dataset ? `${dataset}:${revision}` : null, loadMeta)
+  const meta = metadata.value
+  const filters = useMemo(() => chosenFilters ?? (meta?.first_date ? defaults(meta) : null), [chosenFilters, meta])
+  const loadView = useCallback(
+    (signal: AbortSignal) => api.view(dataset!, filters!, signal).then((data) => ({ data, filters: filters! })),
+    [dataset, filters],
+  )
+  const result = useResource(
+    dataset && filters && meta ? `${dataset}:${revision}:${JSON.stringify(filters)}` : null,
+    loadView,
+  )
+  const displayed =
+    result.value ?? (result.previous?.key.startsWith(`${dataset}:${revision}:`) ? result.previous.value : null)
+  const view = displayed?.data ?? null
+  const displayFilters = displayed?.filters ?? filters
+  const error = metadata.error ?? result.error
+  const loading = metadata.loading || result.loading
 
-  useEffect(() => {
-    if (!dataset || !filters) return
-    const controller = new AbortController()
-    setLoading(true)
-    api
-      .view(dataset, filters, controller.signal)
-      .then((value) => {
-        setView(value)
-        setLoading(false)
-      })
-      .catch((reason) => {
-        if (reason.name === 'AbortError') return
-        setError(reason.message)
-        setLoading(false)
-      })
-    return () => controller.abort()
-  }, [dataset, filters])
+  const openDataset = useCallback((id: string | null) => {
+    setDataset(id)
+    setRevision((value) => value + 1)
+    setFilters(null)
+    setSelected(null)
+    setFailure(null)
+  }, [])
 
   useEffect(() => {
     if (!toast) return
@@ -90,9 +78,11 @@ export default function App() {
       const typing = event.target instanceof Element && event.target.closest('input, textarea, select')
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
+        setSelected(null)
         setPalette((open) => !open)
       } else if (event.key === '/' && !typing) {
         event.preventDefault()
+        setSelected(null)
         setPalette(true)
       }
     }
@@ -123,41 +113,50 @@ export default function App() {
   )
 
   const returnToDemo = useCallback(() => {
-    setFailure(null)
-    setError(null)
-    setDataset('demo')
-  }, [])
+    openDataset('demo')
+  }, [openDataset])
 
   const upload = async (files: Record<string, File>, snapshot: string, origin: DOMRect | null) => {
     setBusy(true)
     try {
       const result = await api.upload(files, snapshot)
       if (result.ok) {
-        setFailure(null)
-        setDataset(result.id)
+        openDataset(result.id)
         burst(origin)
         setToast('Validated and imported. The dashboard now shows your files.')
       } else {
-        setDataset(null)
-        setMeta(null)
-        setView(null)
+        openDataset(null)
         setFailure(result.failure)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (reason) {
-      setToast((reason as Error).message)
+      openDataset(null)
+      setFailure({
+        issue_count: 1,
+        issues: [
+          {
+            file: 'Upload',
+            row: null,
+            column: '',
+            code: 'upload_failed',
+            issue: (reason as Error).message,
+            repair: 'Check the connection and file sizes, then try the complete bundle again.',
+          },
+        ],
+      })
     } finally {
       setBusy(false)
     }
   }
 
   const closeDrawer = useCallback(() => setSelected(null), [])
+  const closePalette = useCallback(() => setPalette(false), [])
 
-  const url = (kind: string) => (dataset && filters ? api.exportUrl(dataset, kind, filters) : '#')
+  const url = (kind: string) => (dataset && displayFilters ? api.exportUrl(dataset, kind, displayFilters) : '#')
 
   const commands = useMemo<Command[]>(() => {
     const download = (kind: string) => () => {
-      if (dataset && filters) window.open(api.exportUrl(dataset, kind, filters), '_self')
+      if (dataset && displayFilters) window.open(api.exportUrl(dataset, kind, displayFilters), '_self')
     }
     const jump = (id: string, label: string, hint?: string): Command => ({
       id: `go-${id}`,
@@ -175,12 +174,17 @@ export default function App() {
       jump('records', 'Records'),
       jump('brief', 'Weekly dispatch'),
       jump('intake', 'Data intake', 'Upload or inspect the receipt'),
-      { id: 'theme', group: 'Actions', label: `Switch to ${theme === 'night' ? 'light' : 'dark'} theme`, run: toggleTheme },
+      {
+        id: 'theme',
+        group: 'Actions',
+        label: `Switch to ${theme === 'night' ? 'light' : 'dark'} theme`,
+        run: toggleTheme,
+      },
       {
         id: 'reset',
         group: 'Actions',
         label: 'Reset all filters',
-        run: () => meta && setFilters(defaults(meta)),
+        run: () => meta?.first_date && setFilters(defaults(meta)),
       },
       { id: 'demo', group: 'Actions', label: 'Open the sample workspace', run: returnToDemo },
       {
@@ -198,9 +202,10 @@ export default function App() {
         run: download('follow-up.csv'),
       },
     ]
-  }, [theme, toggleTheme, meta, returnToDemo, dataset, filters])
+  }, [theme, toggleTheme, meta, returnToDemo, dataset, displayFilters])
 
-  const ready = meta && filters && view && dataset
+  const ready = meta && displayFilters && filters && view && dataset && !error
+  const empty = meta?.inquiries === 0 && !error
 
   return (
     <MotionConfig reducedMotion="user">
@@ -251,7 +256,7 @@ export default function App() {
         <motion.div className="scroll-progress" style={{ scaleX: progress }} aria-hidden="true" />
       </header>
 
-      <main>
+      <main aria-busy={loading}>
         {failure && <ImportFailed failure={failure} onDemo={returnToDemo} />}
         {error && !failure && (
           <section className="section">
@@ -264,7 +269,7 @@ export default function App() {
             </div>
           </section>
         )}
-        {!ready && !failure && !error && (
+        {!ready && !empty && !failure && !error && (
           <div className="empty" style={{ minHeight: '70vh' }}>
             <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.6 }}>
               <BrandMark size={56} />
@@ -272,18 +277,21 @@ export default function App() {
             <p className="label">Reading the tide…</p>
           </div>
         )}
-        {ready && meta.inquiries === 0 && (
+        {empty && (
           <section className="section">
             <div className="shell empty">
               <h3>The files are valid but contain no inquiries</h3>
-              <p>Add records to see metrics.</p>
+              <p>Add records to see metrics, or explore the sample workspace.</p>
+              <button className="btn primary" type="button" onClick={returnToDemo}>
+                Open the sample workspace
+              </button>
             </div>
           </section>
         )}
         {ready && (
           <>
             <Hero meta={meta} metrics={view.metrics} onPalette={() => setPalette(true)} />
-            <Kpis metrics={view.metrics} days={view.timeline} start={filters.start} end={filters.end} />
+            <Kpis metrics={view.metrics} days={view.timeline} start={displayFilters!.start} end={displayFilters!.end} />
 
             <section className="section" id="current">
               <div className="shell">
@@ -301,7 +309,7 @@ export default function App() {
                     flow={view.flow}
                     inquiries={view.inquiries}
                     theme={theme}
-                    activeSources={filters.sources}
+                    activeSources={displayFilters!.sources}
                     allSources={meta.sources}
                     onSelect={setSelected}
                     onSolo={solo}
@@ -326,9 +334,9 @@ export default function App() {
                     timeline={view.timeline}
                     firstDate={meta.first_date!}
                     lastDate={meta.last_date!}
-                    start={filters.start}
-                    end={filters.end}
-                    onChange={(start, end) => setFilters({ ...filters, start, end })}
+                    start={displayFilters!.start}
+                    end={displayFilters!.end}
+                    onChange={(start, end) => setFilters((current) => ({ ...(current ?? defaults(meta)), start, end }))}
                   />
                 </Reveal>
               </div>
@@ -346,7 +354,12 @@ export default function App() {
                   lede="Each source's inquiries, conversion, response speed, and completed work, attributed to the original inquiry. Click a source to focus the whole dashboard on it."
                 />
                 <Reveal>
-                  <Sources rows={view.sources} exportUrl={url('source-metrics.csv')} onSolo={solo} activeSources={filters.sources} />
+                  <Sources
+                    rows={view.sources}
+                    exportUrl={url('source-metrics.csv')}
+                    onSolo={solo}
+                    activeSources={displayFilters!.sources}
+                  />
                 </Reveal>
               </div>
             </section>
@@ -430,10 +443,10 @@ export default function App() {
             </section>
           </>
         )}
-        {failure && (
+        {(failure || empty) && (
           <section className="section" id="intake">
             <div className="shell">
-              <Import enabled busy={busy} onSubmit={upload} />
+              <Import enabled={meta?.uploads_enabled ?? true} busy={busy} onSubmit={upload} />
             </div>
           </section>
         )}
@@ -445,12 +458,10 @@ export default function App() {
             <div>
               <h5 className="label">About Leadflow</h5>
               <p>
-                Lead-to-booking analytics for home-service businesses. Bring three everyday exports and see which
-                leads are waiting, where bookings fall through, and which sources turn into finished work.
+                Lead-to-booking analytics for home-service businesses. Bring three everyday exports and see which leads
+                are waiting, where bookings fall through, and which sources turn into finished work.
               </p>
-              <p>
-                Python and DuckDB SQL compute every number. Files stay on your computer. Built by Hasnain Shahzad.
-              </p>
+              <p>Python and DuckDB SQL compute every number. Files stay on your computer. Built by Hasnain Shahzad.</p>
             </div>
             <div>
               <h5 className="label">Definitions that matter</h5>
@@ -482,14 +493,16 @@ export default function App() {
           meta={meta}
           filters={filters}
           count={view.metrics.inquiries}
+          loading={loading}
           onChange={setFilters}
           onReset={() => setFilters(defaults(meta))}
         />
       )}
       {dataset && <Drawer dataset={dataset} inquiryId={selected} onClose={closeDrawer} />}
       <Palette
+        key={String(palette)}
         open={palette}
-        onClose={() => setPalette(false)}
+        onClose={closePalette}
         commands={commands}
         inquiries={view?.inquiries ?? []}
         onSelect={setSelected}

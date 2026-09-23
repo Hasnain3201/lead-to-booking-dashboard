@@ -8,7 +8,7 @@ if [[ ! -x .venv/bin/python ]]; then
 fi
 if [[ ! -f frontend/dist/index.html ]]; then
   if ! command -v npm >/dev/null; then
-    print "Node.js 20+ is needed once to build the interface. See the README."
+    print "Node.js 20.19+ or 22.12+ is needed once to build the interface. See the README."
     read -r "?Press Return to close."
     exit 1
   fi

@@ -28,6 +28,14 @@ Items marked with a date were performed in a real browser against the running ap
 
 Automated tests cover the underlying logic and API parity. They do not replace these user-facing checks.
 
+## Release regression checks — September 23, 2026
+
+- 71 Python tests cover analytical correctness, validation, API exports, empty uploads, malformed dates and multipart requests, and rejection before oversized files can spill to disk.
+- React tests cover empty workspaces, retrying metadata and metrics failures, stale response cancellation, failed-import clearing, modal focus, keyboard selection, date timer cleanup, and failed sample downloads.
+- The production build was reviewed in a browser. The keyboard inquiry search opens its record, Tab remains inside the drawer, Escape closes it, and an invalid bundle replaces the metrics with the repair report. Header-only uploads show a recoverable empty state; returning to the sample restores all 720 inquiries. The 390 px mobile layout was checked again.
+
+The unchecked items above remain optional owner/user acceptance tasks, not fabricated completed reviews.
+
 ## Usability review template
 
 Ask a friend or stakeholder to complete three tasks without help, and record what happens:

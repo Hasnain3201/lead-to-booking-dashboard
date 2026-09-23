@@ -27,7 +27,7 @@ export function Numeral({ value, className = '' }: { value: string; className?: 
   )
 }
 
-export function trackSpotlight(event: React.PointerEvent<HTMLElement>) {
+function trackSpotlight(event: React.PointerEvent<HTMLElement>) {
   const target = event.currentTarget
   const rect = target.getBoundingClientRect()
   target.style.setProperty('--mx', `${event.clientX - rect.left}px`)

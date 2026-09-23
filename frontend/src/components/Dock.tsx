@@ -7,12 +7,14 @@ export function Dock({
   meta,
   filters,
   count,
+  loading = false,
   onChange,
   onReset,
 }: {
   meta: Meta
   filters: Filters
   count: number
+  loading?: boolean
   onChange: (filters: Filters) => void
   onReset: () => void
 }) {
@@ -70,7 +72,7 @@ export function Dock({
         {formatShortDate(`${filters.start}T00:00:00Z`)} – {formatShortDate(`${filters.end}T00:00:00Z`)}
       </a>
       <span className="dock-count" aria-live="polite">
-        {integer(count)} inquiries
+        {loading ? 'Updating…' : `${integer(count)} inquiries`}
       </span>
       <button className="chip" type="button" onClick={onReset} disabled={pristine} aria-label="Reset all filters">
         <Icon name="reset" size={14} />

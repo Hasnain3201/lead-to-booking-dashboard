@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useDialog } from '../lib/useDialog'
 import type { InquiryLite } from '../lib/api'
 import { OUTCOME_LABELS, sourceLabel } from '../lib/format'
 import { Icon } from './ui'
@@ -27,15 +28,7 @@ export function Palette({
 }) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (open) {
-      setQuery('')
-      setActive(0)
-      requestAnimationFrame(() => inputRef.current?.focus())
-    }
-  }, [open])
+  const dialogRef = useDialog(open, onClose)
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -55,6 +48,10 @@ export function Palette({
     return [...records, ...matched]
   }, [query, commands, inquiries, onSelect])
 
+  useEffect(() => {
+    if (results[active]) document.getElementById(`pal-${results[active].id}`)?.scrollIntoView({ block: 'nearest' })
+  }, [active, results])
+
   const run = (command: Command | undefined) => {
     if (!command) return
     onClose()
@@ -64,11 +61,12 @@ export function Palette({
   const onKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'ArrowDown') {
       event.preventDefault()
-      setActive((i) => Math.min(results.length - 1, i + 1))
+      setActive((i) => Math.max(0, Math.min(results.length - 1, i + 1)))
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
       setActive((i) => Math.max(0, i - 1))
     } else if (event.key === 'Enter') {
+      event.preventDefault()
       run(results[active])
     } else if (event.key === 'Escape') {
       onClose()
@@ -80,8 +78,15 @@ export function Palette({
     <AnimatePresence>
       {open && (
         <>
-          <motion.div className="scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
           <motion.div
+            className="scrim"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <motion.div
+            ref={dialogRef}
             className="palette"
             role="dialog"
             aria-modal="true"
@@ -94,7 +99,6 @@ export function Palette({
             <div className="palette-input">
               <Icon name="search" size={18} />
               <input
-                ref={inputRef}
                 value={query}
                 onChange={(event) => {
                   setQuery(event.target.value)
@@ -102,6 +106,7 @@ export function Palette({
                 }}
                 onKeyDown={onKeyDown}
                 placeholder="Type an inquiry ID or a command…"
+                aria-label="Search commands and inquiry IDs"
                 role="combobox"
                 aria-expanded="true"
                 aria-controls="palette-list"

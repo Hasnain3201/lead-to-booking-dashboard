@@ -16,7 +16,11 @@ export async function revealTheme(origin: HTMLElement | null, apply: () => void)
   const x = rect.left + rect.width / 2
   const y = rect.top + rect.height / 2
   const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
-  await doc.startViewTransition(() => flushSync(apply)).ready
+  try {
+    await doc.startViewTransition(() => flushSync(apply)).ready
+  } catch {
+    return
+  }
   document.documentElement.animate(
     { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
     { duration: 720, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' },
@@ -34,10 +38,16 @@ export function burst(rect: DOMRect | null) {
   canvas.style.width = '100%'
   canvas.style.height = '100%'
   document.body.appendChild(canvas)
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    canvas.remove()
+    return
+  }
   ctx.scale(dpr, dpr)
   const style = getComputedStyle(document.documentElement)
-  const colors = ['--c-tide', '--c-sky', '--c-beam', '--c-rose', '--c-lilac'].map((name) => style.getPropertyValue(name).trim())
+  const colors = ['--c-tide', '--c-sky', '--c-beam', '--c-rose', '--c-lilac'].map((name) =>
+    style.getPropertyValue(name).trim(),
+  )
   const x0 = rect.left + rect.width / 2
   const y0 = rect.top + rect.height / 2
   const bits = Array.from({ length: 90 }, () => {

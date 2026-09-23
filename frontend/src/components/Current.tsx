@@ -543,7 +543,7 @@ export function Current({
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span className="label hide-sm">Each dot is one real inquiry record</span>
+          <span className="label hide-sm">Each dot is one inquiry record</span>
           <button className="btn small" type="button" onClick={() => setPaused((value) => !value)}>
             <Icon name={paused ? 'play' : 'pause'} size={14} />
             {paused ? 'Play the current' : 'Pause'}

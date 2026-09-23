@@ -76,8 +76,9 @@ export const formatShortDate = (iso: string) => shortDate.format(new Date(iso))
 export const formatDateTime = (iso: string) => `${dateTimeFormat.format(new Date(iso))} UTC`
 
 export function ageLabel(hoursOld: number) {
-  if (hoursOld < 48) return `${Math.round(hoursOld)} h`
-  return `${Math.floor(hoursOld / 24)} d ${Math.round(hoursOld % 24)} h`
+  const rounded = Math.round(hoursOld)
+  if (rounded < 48) return `${rounded} h`
+  return `${Math.floor(rounded / 24)} d ${rounded % 24} h`
 }
 
 export function addDays(isoDate: string, days: number) {

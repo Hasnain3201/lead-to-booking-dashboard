@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
-import { api, type Detail } from '../lib/api'
+import { useCallback } from 'react'
+import { useDialog } from '../lib/useDialog'
+import { useResource } from '../lib/useResource'
+import { api } from '../lib/api'
 import {
   centsToCurrency,
   currency,
@@ -21,31 +23,18 @@ const STATUS_COLORS: Record<string, string> = {
   no_show: 'var(--c-beam)',
 }
 
-export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inquiryId: string | null; onClose: () => void }) {
-  const [detail, setDetail] = useState<Detail | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const closeRef = useRef<HTMLButtonElement>(null)
-  const returnFocus = useRef<Element | null>(null)
-
-  useEffect(() => {
-    if (!inquiryId) return
-    returnFocus.current = document.activeElement
-    let live = true
-    setDetail(null)
-    setError(null)
-    api
-      .detail(dataset, inquiryId)
-      .then((value) => live && setDetail(value))
-      .catch((reason) => live && setError(reason.message))
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    requestAnimationFrame(() => closeRef.current?.focus())
-    return () => {
-      live = false
-      window.removeEventListener('keydown', onKey)
-      ;(returnFocus.current as HTMLElement | null)?.focus?.()
-    }
-  }, [dataset, inquiryId, onClose])
+export function Drawer({
+  dataset,
+  inquiryId,
+  onClose,
+}: {
+  dataset: string
+  inquiryId: string | null
+  onClose: () => void
+}) {
+  const load = useCallback((signal: AbortSignal) => api.detail(dataset, inquiryId!, signal), [dataset, inquiryId])
+  const { value: detail, error } = useResource(inquiryId ? `${dataset}:${inquiryId}` : null, load)
+  const dialogRef = useDialog(Boolean(inquiryId), onClose)
 
   const inquiry = detail?.inquiry
 
@@ -60,7 +49,8 @@ export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inqui
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
-          <motion.aside
+          <motion.div
+            ref={dialogRef}
             className="drawer"
             role="dialog"
             aria-modal="true"
@@ -77,7 +67,7 @@ export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inqui
                   {inquiryId}
                 </div>
               </div>
-              <button ref={closeRef} className="icon-btn" type="button" onClick={onClose} aria-label="Close record">
+              <button className="icon-btn" type="button" onClick={onClose} aria-label="Close record">
                 <Icon name="close" />
               </button>
             </div>
@@ -87,7 +77,10 @@ export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inqui
               <>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
                   <span className="badge" style={{ color: SOURCE_COLORS[inquiry.source] }}>
-                    <span className="dot" style={{ background: 'currentColor', boxShadow: '0 0 var(--glow) currentColor' }} />
+                    <span
+                      className="dot"
+                      style={{ background: 'currentColor', boxShadow: '0 0 var(--glow) currentColor' }}
+                    />
                     <span style={{ color: 'var(--ink)' }}>{sourceLabel(inquiry.source)}</span>
                   </span>
                   <span className="badge">{serviceLabel(inquiry.service)}</span>
@@ -122,7 +115,12 @@ export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inqui
                     {sourceLabel(inquiry.source)} · {serviceLabel(inquiry.service)}
                   </Event>
                   {inquiry.first_response_at ? (
-                    <Event delay={0.2} color="var(--c-tide)" when={inquiry.first_response_at} title="First response recorded">
+                    <Event
+                      delay={0.2}
+                      color="var(--c-tide)"
+                      when={inquiry.first_response_at}
+                      title="First response recorded"
+                    >
                       {hours(inquiry.response_hours)} after the inquiry arrived
                     </Event>
                   ) : (
@@ -159,7 +157,7 @@ export function Drawer({ dataset, inquiryId, onClose }: { dataset: string; inqui
                 </p>
               </>
             )}
-          </motion.aside>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

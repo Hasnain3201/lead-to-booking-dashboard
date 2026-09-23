@@ -2,14 +2,18 @@
 
 import json
 import os
+import re
 import uuid
 from collections import OrderedDict
 from dataclasses import dataclass
+from datetime import date
 from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
+from python_multipart.exceptions import MultipartParseError
 from starlette.applications import Starlette
+from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException
 from starlette.formparsers import MultiPartException, MultiPartParser
@@ -37,6 +41,7 @@ SQL = ROOT / "sql/cohort.sql"
 DIST = ROOT / "frontend/dist"
 MAX_FILE_BYTES = 5 * 1024 * 1024
 MAX_UPLOADED_DATASETS = 4
+MAX_REQUEST_BYTES = 3 * MAX_FILE_BYTES + 64 * 1024
 RECORD_COLUMNS = [
     "inquiry_id",
     "created_at",
@@ -56,6 +61,16 @@ SAMPLES = {
 class InMemoryParser(MultiPartParser):
     # Keep uploaded files in memory instead of spilling them to temporary files.
     spool_max_size = MAX_FILE_BYTES
+
+    def on_part_begin(self):
+        super().on_part_begin()
+        self.part_bytes = 0
+
+    def on_part_data(self, data, start, end):
+        self.part_bytes += end - start
+        if self._current_part.file is not None and self.part_bytes > MAX_FILE_BYTES:
+            raise HTTPException(413, "Each file must be 5 MB or smaller.")
+        super().on_part_data(data, start, end)
 
 
 @dataclass
@@ -111,18 +126,39 @@ def parse_list(request, name, allowed):
     return [value for value in raw.split(",") if value in allowed]
 
 
+def iso_date(raw):
+    try:
+        if not isinstance(raw, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", raw):
+            raise ValueError("Invalid date format")
+        parsed = date.fromisoformat(raw)
+        # All filtering uses pandas nanosecond timestamps, including the next-day boundary.
+        pd.Timestamp(parsed).as_unit("ns")
+        (pd.Timestamp(parsed) + pd.Timedelta(days=1)).as_unit("ns")
+        return parsed
+    except (ValueError, OverflowError) as exc:
+        raise HTTPException(
+            400, "Dates must use YYYY-MM-DD within the supported timestamp range."
+        ) from exc
+
+
 def filters(request, dataset):
     full = dataset.cohort
     sources = parse_list(request, "sources", set(full.source))
     services = parse_list(request, "services", set(full.service))
-    try:
-        start = pd.Timestamp(request.query_params.get("start") or full.created_at.min().date())
-        end = pd.Timestamp(request.query_params.get("end") or full.created_at.max().date())
-    except ValueError as exc:
-        raise HTTPException(400, "Dates must use YYYY-MM-DD.") from exc
+
+    def boundary(name, fallback):
+        raw = request.query_params.get(name)
+        if raw is None:
+            return fallback
+        return iso_date(raw)
+
+    fallback_start = dataset.bundle.snapshot.date() if full.empty else full.created_at.min().date()
+    fallback_end = dataset.bundle.snapshot.date() if full.empty else full.created_at.max().date()
+    start = boundary("start", fallback_start)
+    end = boundary("end", fallback_end)
     if start > end:
         raise HTTPException(400, "Start date must be on or before end date.")
-    selected = select_cohort(full, start.date(), end.date(), sources, services)
+    selected = select_cohort(full, start, end, sources, services)
     context = full.loc[full.source.isin(sources) & full.service.isin(services)]
     return selected, context, sources, services
 
@@ -225,31 +261,41 @@ async def upload(request):
     length = request.headers.get("content-length", "")
     if not length.isdigit():
         raise HTTPException(411, "Upload requests need a Content-Length header.")
-    if int(length) > 3 * MAX_FILE_BYTES + 64 * 1024:
+    if int(length) > MAX_REQUEST_BYTES:
         raise HTTPException(413, "Each file must be 5 MB or smaller.")
-    try:
-        parser = InMemoryParser(request.headers, request.stream(), max_files=3, max_fields=4)
-        form = await parser.parse()
-    except MultiPartException as exc:
-        raise HTTPException(400, exc.message) from exc
-    inputs = {}
-    for name in SCHEMAS:
-        part = form.get(name)
-        if isinstance(part, UploadFile):
-            if (part.size or 0) > MAX_FILE_BYTES:
+    if not request.headers.get("content-type", "").lower().startswith("multipart/form-data;"):
+        raise HTTPException(400, "Upload three files using multipart/form-data.")
+
+    async def limited_stream():
+        received = 0
+        async for chunk in request.stream():
+            received += len(chunk)
+            if received > MAX_REQUEST_BYTES:
                 raise HTTPException(413, "Each file must be 5 MB or smaller.")
-            inputs[name] = BytesIO(await part.read())
-        else:
-            inputs[name] = None
-    snapshot_date = form.get("snapshot") or ""
+            yield chunk
+
     try:
-        snapshot = pd.Timestamp(str(snapshot_date), tz="UTC") + pd.Timedelta(
+        parser = InMemoryParser(request.headers, limited_stream(), max_files=3, max_fields=4)
+        form = await parser.parse()
+    except (MultiPartException, MultipartParseError) as exc:
+        raise HTTPException(
+            400, "Invalid multipart upload. Send all three CSV files again."
+        ) from exc
+    try:
+        inputs = {}
+        for name in SCHEMAS:
+            part = form.get(name)
+            inputs[name] = BytesIO(await part.read()) if isinstance(part, UploadFile) else None
+        snapshot_date = form.get("snapshot") or ""
+        snapshot = pd.Timestamp(iso_date(snapshot_date), tz="UTC") + pd.Timedelta(
             days=1, microseconds=-1
         )
-    except ValueError:
-        snapshot = None
+    finally:
+        await form.close()
     try:
-        dataset = build_dataset(uuid.uuid4().hex, "Uploaded files", False, inputs, snapshot)
+        dataset = await run_in_threadpool(
+            build_dataset, uuid.uuid4().hex, "Uploaded files", False, inputs, snapshot
+        )
     except DataQualityError as exc:
         return JSONResponse(
             {"issue_count": exc.issue_count, "issues": records(exc.issues)}, status_code=422

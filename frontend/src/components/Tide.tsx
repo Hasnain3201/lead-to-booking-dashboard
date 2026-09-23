@@ -39,6 +39,8 @@ export function Tide({
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => () => window.clearTimeout(commitTimer.current), [start, end, firstDate, lastDate])
+
   const span = daysBetween(firstDate, lastDate)
   const days = useMemo(() => {
     const byDate = new Map(timeline.map((day) => [day.date, day]))
@@ -48,9 +50,13 @@ export function Tide({
     })
   }, [timeline, firstDate, span])
 
-  const x = scaleLinear().domain([0, span + 1]).range([PAD.left, width - PAD.right])
-  const max = Math.max(4, ...days.map((day) => day.inquiries))
-  const y = scaleLinear().domain([0, max * 1.1]).range([HEIGHT - PAD.bottom, PAD.top])
+  const x = scaleLinear()
+    .domain([0, span + 1])
+    .range([PAD.left, width - PAD.right])
+  const max = days.reduce((largest, day) => Math.max(largest, day.inquiries), 4)
+  const y = scaleLinear()
+    .domain([0, max * 1.1])
+    .range([HEIGHT - PAD.bottom, PAD.top])
   const mid = (i: number) => x(i + 0.5)
 
   const inquiriesArea = area<Day>()
@@ -78,6 +84,7 @@ export function Tide({
   }
 
   const commit = (range: [number, number]) => {
+    window.clearTimeout(commitTimer.current)
     const [lo, hi] = [Math.min(...range), Math.max(...range)]
     setDraft(null)
     onChange(addDays(firstDate, lo), addDays(firstDate, hi))
@@ -85,6 +92,7 @@ export function Tide({
 
   const onPointerDown = (event: React.PointerEvent, mode: Drag['mode']) => {
     event.stopPropagation()
+    window.clearTimeout(commitTimer.current)
     const day = dayAt(event.clientX)
     ;(event.currentTarget as Element).setPointerCapture?.(event.pointerId)
     drag.current = { mode, origin: day, a, b }
@@ -129,8 +137,11 @@ export function Tide({
   const hi = Math.max(a, b)
   const selectionX0 = x(lo)
   const selectionX1 = x(hi + 1)
-  const preset = hi - lo === span ? 'all' : hi === span && hi - lo === 27 ? '28' : hi === span && hi - lo === 13 ? '14' : ''
-  const ticks = days.map((day, i) => ({ day, i })).filter(({ day }) => new Date(`${day.date}T00:00:00Z`).getUTCDay() === 1)
+  const preset =
+    hi - lo === span ? 'all' : hi === span && hi - lo === 27 ? '28' : hi === span && hi - lo === 13 ? '14' : ''
+  const ticks = days
+    .map((day, i) => ({ day, i }))
+    .filter(({ day }) => new Date(`${day.date}T00:00:00Z`).getUTCDay() === 1)
   const hovered = hover != null && !dragging ? days[hover] : null
 
   return (
@@ -164,9 +175,14 @@ export function Tide({
       </div>
       <div
         ref={wrapRef}
-        style={{ position: 'relative' }}
+        style={{ position: 'relative', touchAction: 'pan-y' }}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onPointerCancel={() => {
+          drag.current = null
+          setDragging(false)
+          setDraft(null)
+        }}
         onPointerLeave={() => setHover(null)}
       >
         <svg
@@ -210,7 +226,12 @@ export function Tide({
             <path d={bookedArea(days) ?? ''} style={{ fill: 'url(#tide-booked)' }} />
             <path
               d={bookedArea.lineY1()(days) ?? ''}
-              style={{ fill: 'none', stroke: 'var(--c-tide)', strokeWidth: 1.8, filter: 'drop-shadow(0 0 var(--glow) var(--c-tide))' }}
+              style={{
+                fill: 'none',
+                stroke: 'var(--c-tide)',
+                strokeWidth: 1.8,
+                filter: 'drop-shadow(0 0 var(--glow) var(--c-tide))',
+              }}
             />
             <path
               d={completedLine(days) ?? ''}
@@ -223,7 +244,13 @@ export function Tide({
             width={Math.max(0, selectionX1 - selectionX0)}
             height={HEIGHT - PAD.bottom - PAD.top + 12}
             rx={10}
-            style={{ fill: 'var(--c-tide)', fillOpacity: 0.05, stroke: 'var(--c-tide)', strokeOpacity: 0.35, cursor: 'grab' }}
+            style={{
+              fill: 'var(--c-tide)',
+              fillOpacity: 0.05,
+              stroke: 'var(--c-tide)',
+              strokeOpacity: 0.35,
+              cursor: 'grab',
+            }}
             onPointerDown={(event) => onPointerDown(event, 'move')}
           />
           {(['start', 'end'] as const).map((edge) => {
@@ -243,7 +270,13 @@ export function Tide({
                 onKeyDown={(event) => onHandleKey(event, edge)}
                 onPointerDown={(event) => onPointerDown(event, edge)}
               >
-                <line x1={hx} x2={hx} y1={PAD.top - 12} y2={HEIGHT - PAD.bottom} style={{ stroke: 'var(--c-tide)', strokeWidth: 1.5 }} />
+                <line
+                  x1={hx}
+                  x2={hx}
+                  y1={PAD.top - 12}
+                  y2={HEIGHT - PAD.bottom}
+                  style={{ stroke: 'var(--c-tide)', strokeWidth: 1.5 }}
+                />
                 <rect
                   x={hx - 7}
                   y={(HEIGHT - PAD.bottom + PAD.top) / 2 - 20}
@@ -257,7 +290,13 @@ export function Tide({
             )
           })}
           {ticks.map(({ day, i }) => (
-            <text key={day.date} className="tide-axis" x={x(i)} y={HEIGHT - 8} textAnchor={i === 0 ? 'start' : 'middle'}>
+            <text
+              key={day.date}
+              className="tide-axis"
+              x={x(i)}
+              y={HEIGHT - 8}
+              textAnchor={i === 0 ? 'start' : 'middle'}
+            >
               {formatShortDate(`${day.date}T00:00:00Z`)}
             </text>
           ))}
@@ -276,7 +315,9 @@ export function Tide({
             className="particle-tip"
             style={{ left: Math.min(mid(hover), width - 190), top: 60, transform: 'translate(12px, 0)' }}
           >
-            <div className="label" style={{ marginBottom: 4 }}>{formatDate(`${hovered.date}T00:00:00Z`)}</div>
+            <div className="label" style={{ marginBottom: 4 }}>
+              {formatDate(`${hovered.date}T00:00:00Z`)}
+            </div>
             <div>
               <b className="num">{integer(hovered.inquiries)}</b> inquiries
             </div>
