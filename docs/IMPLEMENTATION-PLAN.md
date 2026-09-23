@@ -66,13 +66,13 @@ The local v1 product is complete: strict CSV validation, exact-cent SQL aggregat
 
 ## Milestones, deliverables, and acceptance criteria
 
-### 0. Project setup and runnable foundation — delivered in this initial setup
+### 0. Project setup and runnable foundation : delivered in this initial setup
 
 Create the Documents folder, virtual environment, dependency lock, install metadata, Git repository, private GitHub remote, launcher, README, project instructions, and CI. Build the deterministic seed generator, demo CSVs, first app screens, SQL query, validation, and regression tests.
 
 Acceptance: launch without credentials; show 720 unique inquiries after removing three duplicate rows; run checks successfully; open all five app sections; create and push the private repository; record precise next steps.
 
-### 1. Requirements and source mapping — 2–3 hours
+### 1. Requirements and source mapping : 2–3 hours
 
 1. Walk through the owner's Monday routine: review last week, assign unanswered leads, inspect failed bookings, assess lead sources.
 2. Create a one-page requirements note listing decisions, users, inputs, expected outputs, and acceptance criteria.
@@ -82,7 +82,7 @@ Acceptance: launch without credentials; show 720 unique inquiries after removing
 
 Acceptance: someone without coding knowledge can explain each KPI, its denominator, and what action it supports. All assumptions are recorded, not buried in code.
 
-### 2. Harden ingestion and analytical correctness — 4–6 hours
+### 2. Harden ingestion and analytical correctness : 4–6 hours
 
 The initial implementation already has strict contracts, normalization receipts, duplicate handling, relationship checks, and small calculation fixtures. Extend it with:
 
@@ -95,7 +95,7 @@ The initial implementation already has strict contracts, normalization receipts,
 
 Acceptance: no silent row loss, no join fan-out, exact hand-calculated counts, consistent denominators, and actionable errors. Failed uploads must never leave the prior dataset displayed as if the import succeeded.
 
-### 3. Refine the owner-facing dashboard — 4–6 hours
+### 3. Refine the owner-facing dashboard : 4–6 hours
 
 1. Review the app in a browser at desktop and narrow widths; refine long labels, contrast, spacing, and chart explanations.
 2. Display human-readable source labels and more useful number formatting in exported/source tables.
@@ -106,7 +106,7 @@ Acceptance: no silent row loss, no join fan-out, exact hand-calculated counts, c
 
 Acceptance: the owner can identify one follow-up priority and explain a source comparison in under three minutes; empty and invalid states are understandable; displayed and downloaded totals agree.
 
-### 4. Strengthen weekly decision support — 3–4 hours
+### 4. Strengthen weekly decision support : 3–4 hours
 
 The initial brief is deterministic Markdown: prior/full-week inquiry counts, cohort outcomes, follow-up backlog, and one rule-based next action. Extend it with:
 
@@ -117,7 +117,7 @@ The initial brief is deterministic Markdown: prior/full-week inquiry counts, coh
 
 Acceptance: every statement can be traced to a visible table or metric; sparse data produces cautious language; no AI or fabricated causal interpretation is needed.
 
-### 5. Packaging and usability review — 3–5 hours
+### 5. Packaging and usability review : 3–5 hours
 
 1. Ask a friend or stakeholder to perform three tasks: find an unanswered inquiry, identify a source with completed jobs, and explain cancellation rate.
 2. Record observations, task completion, misunderstandings, and revisions. Feedback drives the revisions.
@@ -127,13 +127,13 @@ Acceptance: every statement can be traced to a visible table or metric; sparse d
 
 Acceptance: another person can clone and launch using the README; the case study labels the sample workspace; the presenter can explain at least three implementation tradeoffs without relying on code jargon.
 
-### 6. Business pilot — 1–2 weeks once a partner agrees
+### 6. Business pilot : 1–2 weeks once a partner agrees
 
 Get explicit permission to use anonymized exports. Map their fields, agree metric definitions, record a baseline, train one user, collect structured feedback, and observe a short follow-up period. Store any real data in ignored `data/private/`, never Git. Reassess authentication and retention before shared hosting. Measure actual adoption, reconciliation errors, and time to prepare the weekly report; document sample size and observation period.
 
 Acceptance: the owner verifies totals against source records and reports a concrete decision the dashboard helped with. Only then report measured impact.
 
-## Final phase: distinctive frontend and public showcase — delivered
+## Final phase: distinctive frontend and public showcase : delivered
 
 Goal: a beautiful, unique, visually striking interface with playful effects, and a polished public repository. The optional real-business pilot does not block this phase.
 

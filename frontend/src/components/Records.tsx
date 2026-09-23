@@ -104,7 +104,7 @@ export function Records({
                 </td>
                 <td className="r num">{row.bookings}</td>
                 <td className="r num">{row.completed_jobs}</td>
-                <td className="r num">{row.revenue_cents ? centsToCurrency(row.revenue_cents) : '—'}</td>
+                <td className="r num">{row.revenue_cents ? centsToCurrency(row.revenue_cents) : '-'}</td>
                 <td>
                   <StatusPill status={row.outcome}>{OUTCOME_LABELS[row.outcome]}</StatusPill>
                 </td>

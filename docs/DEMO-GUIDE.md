@@ -28,7 +28,7 @@ Items marked with a date were performed in a real browser against the running ap
 
 Automated tests cover the underlying logic and API parity. They do not replace these user-facing checks.
 
-## Release regression checks — September 23, 2026
+## Release regression checks : September 23, 2026
 
 - 71 Python tests cover analytical correctness, validation, API exports, empty uploads, malformed dates and multipart requests, and rejection before oversized files can spill to disk.
 - React tests cover empty workspaces, retrying metadata and metrics failures, stale response cancellation, failed-import clearing, modal focus, keyboard selection, date timer cleanup, and failed sample downloads.
