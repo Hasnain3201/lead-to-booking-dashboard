@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from leadflow.analytics import (  # noqa: E402
     attention_queue,
+    booking_details,
     cohort_table,
     metrics,
     safe_csv,
@@ -168,6 +169,10 @@ with channels:
     else:
         st.info("No source metrics for this selection.")
     st.caption(
+        "Compare inquiry counts alongside rates. Small samples can produce large swings; "
+        "source differences do not establish marketing effectiveness."
+    )
+    st.caption(
         "Revenue is completed-job value in USD, not profit, cash collected, or marketing ROI. "
         "No advertising costs or capacity data are included."
     )
@@ -181,6 +186,30 @@ with followup:
     )
     st.dataframe(queue, hide_index=True, width="stretch")
     st.download_button("Download follow-up list", safe_csv(queue), "follow-up.csv")
+    details = booking_details(bundle, selected)
+    failed = details.loc[details.status.isin(["cancelled", "no_show"])]
+    st.subheader(f"{len(failed)} cancelled or missed bookings")
+    st.caption(
+        "Bookings linked to the selected inquiries, regardless of appointment date. "
+        "A cancellation does not establish that an appointment slot went unfilled."
+    )
+    st.dataframe(failed, hide_index=True, width="stretch")
+    st.download_button("Download booking outcomes", safe_csv(failed), "booking-outcomes.csv")
+    if not selected.empty:
+        inquiry_id = st.selectbox(
+            "Inspect an inquiry", sorted(selected.inquiry_id), key="detail_inquiry"
+        )
+        st.dataframe(
+            selected.loc[selected.inquiry_id.eq(inquiry_id)], hide_index=True, width="stretch"
+        )
+        history = details.loc[details.inquiry_id.eq(inquiry_id)]
+        if history.empty:
+            st.info("This inquiry has no recorded bookings.")
+        else:
+            st.dataframe(history, hide_index=True, width="stretch")
+            st.caption(
+                "Each row is one booking. Blank job fields mean no completed job is recorded."
+            )
     with st.expander("Inspect all selected inquiry records"):
         st.dataframe(selected, hide_index=True, width="stretch")
         st.download_button("Download selected records", safe_csv(selected), "inquiries.csv")

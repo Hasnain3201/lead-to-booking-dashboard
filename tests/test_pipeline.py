@@ -157,3 +157,44 @@ def test_seeded_demo_and_intentionally_bad_example():
     inputs["bookings"] = ROOT / "data/invalid/bookings_orphan.csv"
     with pytest.raises(DataQualityError, match="does not exist"):
         load_bundle(inputs, SNAPSHOT)
+
+
+def test_booking_drilldown_reconciles_and_preserves_unfinished_jobs():
+    from leadflow.analytics import booking_details
+
+    bundle = load_fixture()
+    cohort = cohort_table(bundle, ROOT / "sql/cohort.sql")
+    details = booking_details(bundle, cohort)
+    assert len(details) == metrics(cohort)["bookings"] == 3
+    assert details.status.eq("cancelled").sum() == metrics(cohort)["cancellations"]
+    assert details.status.eq("no_show").sum() == metrics(cohort)["no_shows"]
+    assert details.job_id.notna().sum() == metrics(cohort)["completed_jobs"]
+    assert details.revenue_usd.sum() == metrics(cohort)["revenue_usd"]
+    repeat = booking_details(bundle, cohort.loc[cohort.inquiry_id.eq("I1")])
+    assert set(repeat.booking_id) == {"B1", "B2"}
+    assert repeat.loc[repeat.booking_id.eq("B2"), "job_id"].isna().all()
+    assert booking_details(bundle, cohort.loc[cohort.inquiry_id.eq("I2")]).empty
+    assert booking_details(bundle, cohort.iloc[:0]).empty
+
+
+def test_weekly_response_coverage_and_channel_reconciliation():
+    from leadflow.analytics import source_metrics
+
+    bundle = load_fixture()
+    cohort = cohort_table(bundle, ROOT / "sql/cohort.sql")
+    channels = source_metrics(cohort)
+    overall = metrics(cohort)
+    for key in [
+        "inquiries",
+        "converted",
+        "bookings",
+        "cancellations",
+        "no_shows",
+        "completed_jobs",
+        "revenue_usd",
+    ]:
+        assert channels[key].sum() == overall[key]
+    brief = weekly_summary(cohort, bundle.snapshot)
+    assert "50.0% coverage; mean response time: 4.0 hours" in brief
+    empty = weekly_summary(cohort.iloc[:0], bundle.snapshot)
+    assert "N/A coverage; mean response time: N/A" in empty

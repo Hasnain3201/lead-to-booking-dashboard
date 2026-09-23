@@ -57,6 +57,7 @@ Regeneration uses seed 42 and the fixed snapshot `2026-09-21T00:00:00Z`; it over
 ## Read next
 
 - [Implementation plan](docs/IMPLEMENTATION-PLAN.md): phases, scope, acceptance criteria, architecture, estimates.
+- [Owner requirements](docs/REQUIREMENTS.md) and [source mapping](docs/SOURCE-MAPPING.md).
 - [Metric definitions](docs/METRICS.md): formulas, denominators, attribution, caveats.
 - [CSV contract](docs/DATA-CONTRACT.md): exact inputs and import behavior.
 - [Demo walkthrough](docs/DEMO-GUIDE.md): a short presentation and acceptance checklist.

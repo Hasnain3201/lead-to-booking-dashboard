@@ -73,6 +73,8 @@ def weekly_summary(df, snapshot, synthetic=True):
     now, before = metrics(current), metrics(previous)
     change = now["inquiries"] - before["inquiries"]
     queue = attention_queue(current, snapshot)
+    coverage = f"{now['response_coverage']:.1%}" if now["response_coverage"] is not None else "N/A"
+    response = f"{now['response_hours']:.1f} hours" if now["response_hours"] is not None else "N/A"
     lines = [
         "# Weekly operations brief",
         "",
@@ -81,6 +83,7 @@ def weekly_summary(df, snapshot, synthetic=True):
         f"Outcomes observed through {snapshot.isoformat()}.",
         "",
         f"- Inquiries: {now['inquiries']} ({change:+d} vs. prior full week).",
+        f"- Recorded first responses: {coverage} coverage; mean response time: {response}.",
         f"- Leads with a booking: {now['converted']} of {now['inquiries']}.",
         f"- Completed jobs attributed to this cohort: {now['completed_jobs']}.",
         f"- Recorded job revenue: ${now['revenue_usd']:,.2f} (not profit or cash collected).",
@@ -117,3 +120,14 @@ def safe_csv(df):
             )
         )
     return export.to_csv(index=False).encode("utf-8")
+
+
+def booking_details(bundle, selected):
+    """One row per booking belonging to the selected inquiry cohort."""
+    inquiries = selected[["inquiry_id", "source", "service"]]
+    bookings = bundle.tables["bookings"].merge(
+        inquiries, on="inquiry_id", how="inner", validate="many_to_one"
+    )
+    return bookings.merge(
+        bundle.tables["jobs"], on="booking_id", how="left", validate="one_to_one"
+    ).sort_values(["scheduled_at", "booking_id"])
